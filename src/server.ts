@@ -1,10 +1,9 @@
 import { Server } from 'http'
-import express from 'express'
+
 import mongoose from 'mongoose'
+import app from './app'
 
 let server: Server
-
-const app = express()
 
 const startServer = async () => {
   try {
@@ -18,5 +17,39 @@ const startServer = async () => {
     console.log(error)
   }
 }
+
+process.on('uncaughtException', (err) => {
+  console.log('Uncaught Exception received. Server shuting down', err)
+
+  if (server) {
+    server.close(() => {
+      process.exit(1)
+    })
+  }
+
+  process.exit(1)
+})
+process.on('unhandledRejection', (err) => {
+  console.log('Unhandled rejection received. Server shuting down', err)
+
+  if (server) {
+    server.close(() => {
+      process.exit(1)
+    })
+  }
+
+  process.exit(1)
+})
+process.on('SIGTERM', (err) => {
+  console.log('Sigterm signal received. Server shuting down', err)
+
+  if (server) {
+    server.close(() => {
+      process.exit(1)
+    })
+  }
+
+  process.exit(1)
+})
 
 startServer()
