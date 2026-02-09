@@ -3,16 +3,17 @@ import { Server } from 'http'
 
 import mongoose from 'mongoose'
 import app from './app'
+import { envVars } from './config/config'
 
 let server: Server
 
 const startServer = async () => {
   try {
-    await mongoose.connect('mongodb://localhost:27017/tripnest-management')
+    await mongoose.connect(envVars.MONGODB_URL)
     console.log('Server is connected')
 
-    server = app.listen(3000, () => {
-      console.log(`app is listening on post ${3000}`)
+    server = app.listen(envVars.PORT, () => {
+      console.log(`app is listening on post ${envVars.PORT}`)
     })
   } catch (error) {
     console.log(error)
