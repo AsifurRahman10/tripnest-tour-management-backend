@@ -13,9 +13,9 @@ export interface IAuthProvider {
 }
 
 export enum IsActive {
-  ACTIVE,
-  INACTIVE,
-  BLOCK,
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  BLOCK = 'BLOCK',
 }
 export interface IUser {
   name: string
