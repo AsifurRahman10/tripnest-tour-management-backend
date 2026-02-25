@@ -4,6 +4,9 @@ import httpStatusCode from 'http-status-codes'
 import { UserServices } from './user.service'
 import catchAsync from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
+import { verifyToken } from '../../utils/jwt'
+import { envVars } from '../../config/config'
+import { JwtPayload } from 'jsonwebtoken'
 
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -32,7 +35,31 @@ const getAllUser = catchAsync(
   }
 )
 
+const updateUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req?.params?.id
+    const payload = req.body
+    const token = req.headers.authorization
+    const verifiedToken = verifyToken(
+      token as string,
+      envVars.JWT_SECRET
+    ) as JwtPayload
+    const user = await UserServices.updateUserService(
+      userId as string,
+      payload,
+      verifiedToken
+    )
+    sendResponse(res, {
+      statusCode: httpStatusCode.CREATED,
+      success: true,
+      message: 'User updated successfully',
+      data: user,
+    })
+  }
+)
+
 export const UserControllers = {
   createUser,
   getAllUser,
+  updateUser,
 }
