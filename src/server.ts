@@ -3,9 +3,8 @@ import { Server } from 'http'
 
 import mongoose from 'mongoose'
 import app from './app'
-import { envVars } from './config/config'
-import seedSuperAdmin from './utils/seedSuperAdmin'
-
+import seedSuperAdmin from './app/utils/seedSuperAdmin'
+import { envVars } from './app/config/config'
 let server: Server
 
 const startServer = async () => {
