@@ -4,6 +4,7 @@ import { Server } from 'http'
 import mongoose from 'mongoose'
 import app from './app'
 import { envVars } from './config/config'
+import seedSuperAdmin from './utils/seedSuperAdmin'
 
 let server: Server
 
@@ -53,5 +54,7 @@ process.on('SIGTERM', (err) => {
 
   process.exit(1)
 })
-
-startServer()
+;(async () => {
+  await startServer()
+  await seedSuperAdmin()
+})()
