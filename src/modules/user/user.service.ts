@@ -44,7 +44,6 @@ const updateUserService = async (
   token: JwtPayload
 ) => {
   const isUserExist = await User.findById(userId)
-  console.log(payload)
   if (!isUserExist) {
     throw new AppError(httpStatusCode.NOT_FOUND, 'User not found')
   }
