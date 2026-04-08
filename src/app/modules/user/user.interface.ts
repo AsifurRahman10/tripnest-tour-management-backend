@@ -4,7 +4,7 @@ export enum Role {
   SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
   USER = 'USER',
-  GUIDE = 'GUIDE',
+  GUIDE = 'GUIDE'
 }
 
 export interface IAuthProvider {
@@ -15,9 +15,10 @@ export interface IAuthProvider {
 export enum IsActive {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  BLOCK = 'BLOCK',
+  BLOCK = 'BLOCK'
 }
 export interface IUser {
+  _id: Types.ObjectId
   name: string
   email: string
   password?: string
