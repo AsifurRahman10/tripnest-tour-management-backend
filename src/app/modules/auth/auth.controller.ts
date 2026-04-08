@@ -6,6 +6,9 @@ import httpStatusCode from 'http-status-codes'
 import { AuthService } from './auth.service'
 import { sendCookie } from '../../utils/setCookies'
 import { IUser } from '../user/user.interface'
+import AppError from '../../errorHelpers/AppError'
+import { createUserTokens } from '../../utils/userTokens'
+import { envVars } from '../../config/config'
 
 const credentialLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -76,10 +79,28 @@ const resetPassword = catchAsync(
     })
   }
 )
+const googleCallback = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user
+    if (!user) {
+      throw new AppError(
+        httpStatusCode.UNAUTHORIZED,
+        'Google authentication failed'
+      )
+    }
+
+    const token = createUserTokens(user)
+
+    sendCookie(res, token)
+
+    return res.redirect(envVars.FRONTEND_URL)
+  }
+)
 
 export const AuthController = {
   credentialLogin,
   getNewAccessToken,
   logout,
-  resetPassword
+  resetPassword,
+  googleCallback
 }
