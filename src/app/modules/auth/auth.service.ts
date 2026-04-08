@@ -1,10 +1,12 @@
 import AppError from '../../errorHelpers/AppError'
-import { IUser } from '../user/user.interface'
+import { IsActive, IUser } from '../user/user.interface'
 import { User } from '../user/user.model'
 import httpStatusCode from 'http-status-codes'
 import bcrypt from 'bcryptjs'
-import { generateJwt } from '../../utils/jwt'
+import { createUserTokens } from '../../utils/userTokens'
+import { generateJwt, verifyToken } from '../../utils/jwt'
 import { envVars } from '../../config/config'
+import { JwtPayload } from 'jsonwebtoken'
 
 const credentialLogin = async (payload: Partial<IUser>) => {
   const { email, password } = payload
@@ -22,28 +24,44 @@ const credentialLogin = async (payload: Partial<IUser>) => {
     throw new AppError(httpStatusCode.FORBIDDEN, 'Password does not match')
   }
 
-  const jwtPayload = {
-    userId: isUserExist._id,
-    email: isUserExist?.email,
-    role: isUserExist?.role
-  }
-
-  const accessToken = generateJwt(
-    jwtPayload,
-    envVars.JWT_SECRET,
-    envVars.JWT_EXPIRE
-  )
-
-  const refreshToken = generateJwt(
-    jwtPayload,
-    envVars.JWT_REFRESH_SECRET,
-    envVars.JWT_REFRESH_EXPIRE
-  )
+  const { accessToken, refreshToken } = createUserTokens(isUserExist)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { password: _, ...userData } = isUserExist.toObject()
 
   return { accessToken, refreshToken, user: userData }
 }
+const generateAccessToken = async (refreshToken: string) => {
+  const validateRefreshToken = verifyToken(
+    refreshToken,
+    envVars.JWT_REFRESH_SECRET
+  ) as JwtPayload
 
-export const AuthService = { credentialLogin }
+  const isUserExist = await User.findOne({ email: validateRefreshToken.email })
+  if (!isUserExist) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'User does not exist')
+  }
+  if (
+    isUserExist.isActive === IsActive.BLOCK ||
+    isUserExist.isActive === IsActive.INACTIVE
+  ) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'User is not active')
+  }
+
+  if (isUserExist.isDeleted) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'User is deleted')
+  }
+  const jwtPayload = {
+    userId: isUserExist._id,
+    email: isUserExist?.email,
+    role: isUserExist?.role
+  }
+  const accessToken = generateJwt(
+    jwtPayload,
+    envVars.JWT_SECRET,
+    envVars.JWT_EXPIRE
+  )
+  return { accessToken }
+}
+
+export const AuthService = { credentialLogin, generateAccessToken }
