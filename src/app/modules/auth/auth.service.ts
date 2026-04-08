@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import AppError from '../../errorHelpers/AppError'
 import { IsActive, IUser } from '../user/user.interface'
 import { User } from '../user/user.model'
@@ -63,5 +64,31 @@ const generateAccessToken = async (refreshToken: string) => {
   )
   return { accessToken }
 }
+const resetPassword = async (
+  decoderToken: JwtPayload,
+  oldPassword: string,
+  newPassword: string
+) => {
+  const user = await User.findOne({ email: decoderToken.email })
 
-export const AuthService = { credentialLogin, generateAccessToken }
+  const isOldPasswordMatch = await bcrypt.compare(
+    oldPassword,
+    user?.password as string
+  )
+  if (!isOldPasswordMatch) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'Old password does not match')
+  }
+  const hashedNewPassword = await bcrypt.hash(
+    newPassword,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  )
+
+  user!.password = hashedNewPassword
+  await user?.save()
+}
+
+export const AuthService = {
+  credentialLogin,
+  generateAccessToken,
+  resetPassword
+}
