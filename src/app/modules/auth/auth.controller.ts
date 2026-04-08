@@ -5,6 +5,7 @@ import sendResponse from '../../utils/sendResponse'
 import httpStatusCode from 'http-status-codes'
 import { AuthService } from './auth.service'
 import { sendCookie } from '../../utils/setCookies'
+import { IUser } from '../user/user.interface'
 
 const credentialLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -61,7 +62,11 @@ const resetPassword = catchAsync(
     const oldPassword = req.body.oldPassword
     const newPassword = req.body.newPassword
 
-    await AuthService.resetPassword(decoderToken, oldPassword, newPassword)
+    await AuthService.resetPassword(
+      decoderToken as IUser,
+      oldPassword,
+      newPassword
+    )
 
     sendResponse(res, {
       statusCode: httpStatusCode.OK,
