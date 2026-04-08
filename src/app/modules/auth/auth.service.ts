@@ -25,7 +25,7 @@ const credentialLogin = async (payload: Partial<IUser>) => {
   const jwtPayload = {
     userId: isUserExist._id,
     email: isUserExist?.email,
-    role: isUserExist?.role,
+    role: isUserExist?.role
   }
 
   const accessToken = generateJwt(
@@ -34,7 +34,16 @@ const credentialLogin = async (payload: Partial<IUser>) => {
     envVars.JWT_EXPIRE
   )
 
-  return { accessToken }
+  const refreshToken = generateJwt(
+    jwtPayload,
+    envVars.JWT_REFRESH_SECRET,
+    envVars.JWT_REFRESH_EXPIRE
+  )
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password: _, ...userData } = isUserExist.toObject()
+
+  return { accessToken, refreshToken, user: userData }
 }
 
 export const AuthService = { credentialLogin }

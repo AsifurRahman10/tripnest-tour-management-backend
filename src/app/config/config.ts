@@ -11,6 +11,8 @@ interface EnvProps {
   BCRYPT_SALT_ROUND: string
   SUPER_ADMIN_EMAIL: string
   SUPER_ADMIN_PASSWORD: string
+  JWT_REFRESH_EXPIRE: string
+  JWT_REFRESH_SECRET: string
 }
 
 const loadEnv = (): EnvProps => {
@@ -23,6 +25,8 @@ const loadEnv = (): EnvProps => {
     'BCRYPT_SALT_ROUND',
     'SUPER_ADMIN_EMAIL',
     'SUPER_ADMIN_PASSWORD',
+    'JWT_REFRESH_EXPIRE',
+    'JWT_REFRESH_SECRET'
   ]
 
   envArray.forEach((key) => {
@@ -39,6 +43,8 @@ const loadEnv = (): EnvProps => {
     BCRYPT_SALT_ROUND: process.env.BCRYPT_SALT_ROUND as string,
     SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL as string,
     SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD as string,
+    JWT_REFRESH_EXPIRE: process.env.JWT_REFRESH_EXPIRE as string,
+    JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string
   }
 }
 
