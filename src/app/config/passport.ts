@@ -8,6 +8,44 @@ import {
 import { envVars } from './config'
 import { User } from '../modules/user/user.model'
 import { Role } from '../modules/user/user.interface'
+import { Strategy as localStrategy } from 'passport-local'
+import bcrypt from 'bcryptjs'
+
+passport.use(
+  new localStrategy(
+    { usernameField: 'email', passwordField: 'password' },
+    async (email: string, password: string, done: any) => {
+      try {
+        const isUserExist = await User.findOne({ email })
+        if (!isUserExist) {
+          return done(null, false, { message: 'User does not exist' })
+        }
+
+        const isRegisterWithGoogle = isUserExist.auths.some(
+          (p) => p.provider == 'google'
+        )
+
+        if (isRegisterWithGoogle) {
+          return done(null, false, {
+            message:
+              'You are registered with google, please login with google or if you want to login with email and password, please set a password in your profile'
+          })
+        }
+        const isPasswordMatch = await bcrypt.compare(
+          password as string,
+          isUserExist?.password as string
+        )
+
+        if (!isPasswordMatch) {
+          return done(null, false, { message: 'Password does not match' })
+        }
+        return done(null, isUserExist)
+      } catch (error) {
+        done(error)
+      }
+    }
+  )
+)
 
 passport.use(
   new GoogleStrategy(
