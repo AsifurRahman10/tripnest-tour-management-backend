@@ -25,7 +25,7 @@ passport.use(
           (p) => p.provider == 'google'
         )
 
-        if (isRegisterWithGoogle) {
+        if (isRegisterWithGoogle && !isUserExist.password) {
           return done(null, false, {
             message:
               'You are registered with google, please login with google or if you want to login with email and password, please set a password in your profile'
