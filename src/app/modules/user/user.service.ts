@@ -19,13 +19,13 @@ const createUserService = async (payload: Partial<IUser>) => {
 
   const authProvider: IAuthProvider = {
     provider: 'credential',
-    providerID: email as string,
+    providerID: email as string
   }
   const user = await User.create({
     email,
     password: hashPassword,
     ...rest,
-    auths: [authProvider],
+    auths: [authProvider]
   })
 
   return user
@@ -82,7 +82,7 @@ const updateUserService = async (
 
   const newUpdatedUser = await User.findByIdAndUpdate(userId, payload, {
     new: true,
-    runValidators: true,
+    runValidators: true
   })
 
   return newUpdatedUser
@@ -91,5 +91,5 @@ const updateUserService = async (
 export const UserServices = {
   createUserService,
   getAllUserService,
-  updateUserService,
+  updateUserService
 }

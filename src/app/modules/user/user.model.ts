@@ -4,18 +4,18 @@ import { IAuthProvider, IsActive, IUser, Role } from './user.interface'
 const authSchema = new Schema<IAuthProvider>(
   {
     provider: { type: String, required: true },
-    providerID: { type: String, required: true },
+    providerID: { type: String, required: true }
   },
   {
     versionKey: false,
-    _id: false,
+    _id: false
   }
 )
 
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     password: { type: String },
     phone: { type: String },
     image: { type: String },
@@ -24,20 +24,20 @@ const userSchema = new Schema<IUser>(
     isActive: {
       type: String,
       enum: Object.values(IsActive),
-      default: IsActive.ACTIVE,
+      default: IsActive.ACTIVE
     },
     isVerified: { type: Boolean },
     role: {
       type: String,
       enum: Object.values(Role),
-      default: Role.USER,
+      default: Role.USER
     },
-    auths: [authSchema],
+    auths: [authSchema]
     // booking:
   },
   {
     timestamps: true,
-    versionKey: false,
+    versionKey: false
   }
 )
 
