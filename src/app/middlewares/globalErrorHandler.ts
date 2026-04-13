@@ -12,6 +12,7 @@ const globalErrorHandler = (
 ) => {
   let statusCode = 500
   let message = 'Something went wrong'
+  let errorSource: any = []
 
   // mongoose error
   if (err.code === 11000) {
@@ -23,6 +24,22 @@ const globalErrorHandler = (
     // invalid ObjectId error
     statusCode = 400
     message = 'Invalid ID format'
+  } else if (err.name == 'ValidationError') {
+    // mongoose validation error
+    statusCode = 400
+    message = 'Validation error'
+    errorSource = Object.values(err.errors).map((e: any) => ({
+      path: e.path,
+      message: e.message
+    }))
+  } else if (err.name == 'zodError') {
+    // zod validation error
+    statusCode = 400
+    message = 'Zod validation error'
+    errorSource = err.errors.map((e: any) => ({
+      path: e.path[e.path.length - 1],
+      message: e.message
+    }))
   } else if (err instanceof AppError) {
     statusCode = err.statusCode
     message = err.message
@@ -33,7 +50,8 @@ const globalErrorHandler = (
   res.status(statusCode).json({
     success: false,
     message: message,
-    err,
+    err: envVars.NODE_ENV == 'development' ? err : null,
+    errorSource,
     stack: envVars.NODE_ENV == 'development' ? err.stack : null
   })
 }
