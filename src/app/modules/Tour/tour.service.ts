@@ -15,4 +15,13 @@ const getAllTourTypes = async () => {
   return result
 }
 
-export const tourService = { createTourTypes, getAllTourTypes }
+const updateTourType = async (id: string, data: ITourType) => {
+  const isTourTypeExist = await tourType.findOne({ name: data.name })
+  if (isTourTypeExist) {
+    throw new Error('Tour type already exists')
+  }
+  const result = await tourType.findByIdAndUpdate(id, data, { new: true })
+  return result
+}
+
+export const tourService = { createTourTypes, getAllTourTypes, updateTourType }

@@ -16,4 +16,11 @@ router.post(
 
 router.get('/tour-types', tourController.getAllTourTypes)
 
+router.patch(
+  '/tour-types/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(tourValidation.updateTourTypeValidation),
+  tourController.updateTourType
+)
+
 export const TourRouter = router
