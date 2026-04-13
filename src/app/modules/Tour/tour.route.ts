@@ -2,8 +2,8 @@ import { Router } from 'express'
 import checkAuth from '../../middlewares/checkAuth'
 import { Role } from '../user/user.interface'
 import { tourController } from './tour.controller'
-import validateRequest from '../../middlewares/validateReqest'
 import { tourValidation } from './tour.validation'
+import validateRequest from '../../middlewares/validateRequest'
 
 const router = Router()
 
