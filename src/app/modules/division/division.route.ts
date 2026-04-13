@@ -19,6 +19,11 @@ router.patch(
   validateRequest(divisionValidation.updateDivisionValidation),
   divisionController.updateDivisionByID
 )
+router.delete(
+  '/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  divisionController.deleteDivisionByID
+)
 
 router.get('/', divisionController.getAllDivisions)
 
