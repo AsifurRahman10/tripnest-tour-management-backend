@@ -7,6 +7,6 @@ const createDivisionValidation = z.object({
   thumbnail: z.url('Thumbnail must be a valid URL').optional()
 })
 
-export const divisionValidation = {
+export const DivisionValidation = {
   createDivisionValidation
 }
