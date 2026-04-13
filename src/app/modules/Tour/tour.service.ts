@@ -24,4 +24,18 @@ const updateTourType = async (id: string, data: ITourType) => {
   return result
 }
 
-export const tourService = { createTourTypes, getAllTourTypes, updateTourType }
+const deleteTourTypeById = async (id: string) => {
+  const isTourTypeExist = await tourType.findById(id)
+  if (!isTourTypeExist) {
+    throw new Error('Tour type not found')
+  }
+  const result = await tourType.findByIdAndDelete(id)
+  return result
+}
+
+export const tourService = {
+  createTourTypes,
+  getAllTourTypes,
+  updateTourType,
+  deleteTourTypeById
+}
