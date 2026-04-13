@@ -37,8 +37,17 @@ const updateDivisionByID = async (id: string, data: Partial<IDivision>) => {
   return updateDivision
 }
 
+const deleteDivisionById = async (id: string) => {
+  const isDivisionExist = await Division.findById(id)
+  if (!isDivisionExist) {
+    throw new AppError(400, 'Division not found')
+  }
+  await Division.findByIdAndDelete(id)
+}
+
 export const DivisionService = {
   createDivision,
   getAllDivisions,
-  updateDivisionByID
+  updateDivisionByID,
+  deleteDivisionById
 }
