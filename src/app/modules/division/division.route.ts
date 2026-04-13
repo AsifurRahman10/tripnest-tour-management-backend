@@ -13,6 +13,12 @@ router.post(
   validateRequest(divisionValidation.createDivisionValidation),
   divisionController.createDivision
 )
+router.patch(
+  '/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(divisionValidation.updateDivisionValidation),
+  divisionController.updateDivisionByID
+)
 
 router.get('/', divisionController.getAllDivisions)
 

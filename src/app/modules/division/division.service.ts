@@ -18,7 +18,27 @@ const getAllDivisions = async () => {
   return result
 }
 
+const updateDivisionByID = async (id: string, data: Partial<IDivision>) => {
+  const isDivisionExist = await Division.findById(id)
+  if (!isDivisionExist) {
+    throw new AppError(400, 'Division not found')
+  }
+  const isExist = await Division.findOne({
+    $or: [{ name: data.name }, { slug: data.slug }]
+  })
+  if (isExist) {
+    throw new AppError(400, 'Division with this name and slug already exists')
+  }
+
+  const updateDivision = await Division.findByIdAndUpdate(id, data, {
+    new: true
+  })
+
+  return updateDivision
+}
+
 export const DivisionService = {
   createDivision,
-  getAllDivisions
+  getAllDivisions,
+  updateDivisionByID
 }
