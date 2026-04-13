@@ -7,6 +7,8 @@ import validateRequest from '../../middlewares/validateRequest'
 
 const router = Router()
 
+// tour type routes
+
 router.post(
   '/create-tour-type',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
@@ -27,6 +29,15 @@ router.delete(
   '/tour-types/:id',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   tourController.deleteTourType
+)
+
+// tour routes
+
+router.post(
+  '/create-tour',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(tourValidation.createTourValidation),
+  tourController.createTour
 )
 
 export const TourRouter = router
