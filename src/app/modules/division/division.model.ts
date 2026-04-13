@@ -22,4 +22,4 @@ const divisionModel = new Schema(
   { timestamps: true }
 )
 
-export const division = model<IDivision>('Division', divisionModel)
+export const Division = model<IDivision>('Division', divisionModel)
