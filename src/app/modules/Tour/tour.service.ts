@@ -1,5 +1,5 @@
-import { ITourType } from './tour.interface'
-import { tourType } from './tour.model'
+import { ITourType } from './Tour.interface'
+import { tourType } from './Tour.model'
 
 const createTourTypes = async (data: ITourType) => {
   const isTourTypeExist = await tourType.findOne({ name: data.name })
@@ -33,9 +33,15 @@ const deleteTourTypeById = async (id: string) => {
   return result
 }
 
+const createTour = async (data: any) => {
+  const result = await Tour.create(data)
+  return result
+}
+
 export const tourService = {
   createTourTypes,
   getAllTourTypes,
   updateTourType,
-  deleteTourTypeById
+  deleteTourTypeById,
+  createTour
 }
