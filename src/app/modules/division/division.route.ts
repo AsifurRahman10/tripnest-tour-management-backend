@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { DivisionController } from './division.controller'
+import { divisionController } from './division.controller'
 import checkAuth from '../../middlewares/checkAuth'
 import { Role } from '../user/user.interface'
 import validateRequest from '../../middlewares/validateReqest'
@@ -11,7 +11,9 @@ router.post(
   '/create',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(divisionValidation.createDivisionValidation),
-  DivisionController.createDivision
+  divisionController.createDivision
 )
+
+router.get('/', divisionController.getAllDivisions)
 
 export const DivisionRouter = router

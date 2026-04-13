@@ -13,6 +13,12 @@ const createDivision = async (data: IDivision) => {
   return result
 }
 
+const getAllDivisions = async () => {
+  const result = await Division.find()
+  return result
+}
+
 export const DivisionService = {
-  createDivision
+  createDivision,
+  getAllDivisions
 }
