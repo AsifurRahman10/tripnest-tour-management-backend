@@ -23,4 +23,10 @@ router.patch(
   tourController.updateTourType
 )
 
+router.delete(
+  '/tour-types/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  tourController.deleteTourType
+)
+
 export const TourRouter = router
