@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express'
-import { DivisionService } from './division.service'
 import catchAsync from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
 import httpStatusCode from 'http-status-codes'
+import { DivisionService } from './division.service'
 
 const createDivision = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -31,7 +31,7 @@ const getAllDivisions = catchAsync(
   }
 )
 
-export const divisionController = {
+export const DivisionController = {
   createDivision,
   getAllDivisions
 }

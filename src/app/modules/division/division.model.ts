@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose'
 import { IDivision } from './division.interface'
 
-const divisionModel = new Schema(
+const divisionModel = new Schema<IDivision>(
   {
     name: {
       type: String,
