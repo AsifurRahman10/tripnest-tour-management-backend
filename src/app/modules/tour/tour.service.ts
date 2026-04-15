@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ITour, ITourType } from './Tour.interface'
+import { ITour, ITourType } from './xtour.interface'
 import { TourType, Tour } from './tour.model'
 
 const createTourTypes = async (data: ITourType) => {
