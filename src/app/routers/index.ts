@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { UserRouter } from '../modules/user/user.route'
 import { AuthRouter } from '../modules/auth/auth.route'
 import { DivisionRouter } from '../modules/division/division.route'
-import { TourRouter } from '../modules/Xtour/tour.route'
+import { TourRouter } from '../modules/tour/tour.route'
 
 export const router = Router()
 
