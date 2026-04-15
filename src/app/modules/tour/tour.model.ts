@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose'
-import { ITourType, ITour } from './Xtour.interface'
+import { ITourType, ITour } from './tour.interface'
 
 const tourTypeSchema = new Schema<ITourType>(
   {

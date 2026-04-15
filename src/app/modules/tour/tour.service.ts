@@ -1,5 +1,5 @@
-import { TourType } from './Tour.model'
-import { ITourType } from './Xtour.interface'
+import { ITourType } from './tour.interface'
+import { TourType } from './tour.model'
 
 const createTourTypes = async (data: ITourType) => {
   const isTourTypeExist = await TourType.findOne({ name: data.name })
