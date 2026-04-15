@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from 'express'
+import { ZodError } from 'zod'
 import { envVars } from '../config/config'
 import AppError from '../errorHelpers/AppError'
 
@@ -32,12 +33,13 @@ const globalErrorHandler = (
       path: e.path,
       message: e.message
     }))
-  } else if (err.name == 'zodError') {
+  } else if (err instanceof ZodError || err?.name === 'ZodError') {
     // zod validation error
     statusCode = 400
-    message = 'Zod validation error'
-    errorSource = err.errors.map((e: any) => ({
-      path: e.path[e.path.length - 1],
+    message = 'Validation error'
+    const issues = err?.issues || err?.errors || []
+    errorSource = issues.map((e: any) => ({
+      path: e.path?.length ? e.path[e.path.length - 1] : 'body',
       message: e.message
     }))
   } else if (err instanceof AppError) {

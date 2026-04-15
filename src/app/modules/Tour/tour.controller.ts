@@ -69,10 +69,24 @@ const createTour = catchAsync(
   }
 )
 
+const getAllTours = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = await tourService.getAllTours(req.query)
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'Tours retrieved successfully',
+      data: user
+    })
+  }
+)
+
 export const tourController = {
   createTourType,
   getAllTourTypes,
   updateTourType,
   deleteTourType,
-  createTour
+  createTour,
+  getAllTours
 }
