@@ -41,4 +41,17 @@ router.post(
 )
 
 router.get('/', tourController.getAllTours)
+
+router.patch(
+  '/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(tourValidation.updateTourValidation),
+  tourController.updateTour
+)
+
+router.delete(
+  '/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  tourController.deleteTour
+)
 export const TourRouter = router
