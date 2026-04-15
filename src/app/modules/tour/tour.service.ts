@@ -1,35 +1,35 @@
-import { ITourType } from './tour.interface'
-import { tourType } from './tour.model'
+import { TourType } from './Tour.model'
+import { ITourType } from './Xtour.interface'
 
 const createTourTypes = async (data: ITourType) => {
-  const isTourTypeExist = await tourType.findOne({ name: data.name })
+  const isTourTypeExist = await TourType.findOne({ name: data.name })
   if (isTourTypeExist) {
     throw new Error('Tour type already exists')
   }
-  const result = await tourType.create(data)
+  const result = await TourType.create(data)
   return result
 }
 
 const getAllTourTypes = async () => {
-  const result = await tourType.find()
+  const result = await TourType.find()
   return result
 }
 
 const updateTourType = async (id: string, data: ITourType) => {
-  const isTourTypeExist = await tourType.findOne({ name: data.name })
+  const isTourTypeExist = await TourType.findOne({ name: data.name })
   if (isTourTypeExist) {
     throw new Error('Tour type already exists')
   }
-  const result = await tourType.findByIdAndUpdate(id, data, { new: true })
+  const result = await TourType.findByIdAndUpdate(id, data, { new: true })
   return result
 }
 
 const deleteTourTypeById = async (id: string) => {
-  const isTourTypeExist = await tourType.findById(id)
+  const isTourTypeExist = await TourType.findById(id)
   if (!isTourTypeExist) {
     throw new Error('Tour type not found')
   }
-  const result = await tourType.findByIdAndDelete(id)
+  const result = await TourType.findByIdAndDelete(id)
   return result
 }
 
