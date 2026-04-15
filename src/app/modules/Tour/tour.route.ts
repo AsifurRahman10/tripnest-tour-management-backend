@@ -34,10 +34,11 @@ router.delete(
 // tour routes
 
 router.post(
-  '/create-tour',
+  '/create',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(tourValidation.createTourValidation),
   tourController.createTour
 )
 
+router.get('/', tourController.getAllTours)
 export const TourRouter = router
