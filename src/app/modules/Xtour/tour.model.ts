@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose'
-import { ITour, ITourType } from './tour.interface'
+import { ITour, ITourType } from './Tour.interface'
 
 const tourTypeSchema = new Schema<ITourType>(
   {
@@ -12,7 +12,7 @@ const tourTypeSchema = new Schema<ITourType>(
   { timestamps: true }
 )
 
-export const tourType = model<ITourType>('TourType', tourTypeSchema)
+export const TourType = model<ITourType>('TourType', tourTypeSchema)
 
 const tourSchema = new Schema<ITour>(
   {

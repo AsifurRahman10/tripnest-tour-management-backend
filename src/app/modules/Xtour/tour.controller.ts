@@ -82,11 +82,41 @@ const getAllTours = catchAsync(
   }
 )
 
+const updateTour = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = await tourService.updateTourById(
+      req.params.id as string,
+      req.body
+    )
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'Tour updated successfully',
+      data: user
+    })
+  }
+)
+const deleteTour = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = await tourService.deleteTourById(req.params.id as string)
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'Tour deleted successfully',
+      data: user
+    })
+  }
+)
+
 export const tourController = {
   createTourType,
   getAllTourTypes,
   updateTourType,
   deleteTourType,
   createTour,
-  getAllTours
+  getAllTours,
+  updateTour,
+  deleteTour
 }
