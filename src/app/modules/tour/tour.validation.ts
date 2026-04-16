@@ -22,7 +22,9 @@ const createTourValidation = z.object({
   tourPlan: z.array(z.string()).optional(),
   maxGuests: z.number().optional(),
   minAge: z.number().optional(),
-  tourType: z.string().min(4, 'Tour type is required')
+  tourType: z.string().min(4, 'Tour type is required'),
+  departureLocation: z.string().optional(),
+  arrivalLocation: z.string().optional()
 })
 const updateTourValidation = z.object({
   title: z.string().optional(),
@@ -39,7 +41,9 @@ const updateTourValidation = z.object({
   tourPlan: z.array(z.string()).optional(),
   maxGuests: z.number().optional(),
   minAge: z.number().optional(),
-  tourType: z.string().optional()
+  tourType: z.string().optional(),
+  departureLocation: z.string().optional(),
+  arrivalLocation: z.string().optional()
 })
 
 export const tourValidation = {
