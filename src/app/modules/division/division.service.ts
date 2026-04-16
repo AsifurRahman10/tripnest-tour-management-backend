@@ -47,9 +47,18 @@ const deleteDivisionById = async (id: string) => {
   await Division.findByIdAndDelete(id)
 }
 
+const getSingleDivisionBySlug = async (slug: string) => {
+  const division = await Division.findOne({ slug })
+  if (!division) {
+    throw new AppError(400, 'Division not found')
+  }
+  return division
+}
+
 export const DivisionService = {
   createDivision,
   getAllDivisions,
   updateDivisionByID,
-  deleteDivisionById
+  deleteDivisionById,
+  getSingleDivisionBySlug
 }

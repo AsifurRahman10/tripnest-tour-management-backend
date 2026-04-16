@@ -60,9 +60,26 @@ const deleteDivisionByID = catchAsync(
   }
 )
 
+const getSingleDivisionBySlug = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { slug } = req.params
+    const division = await DivisionService.getSingleDivisionBySlug(
+      slug as string
+    )
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'Division retrieved successfully',
+      data: division
+    })
+  }
+)
+
 export const DivisionController = {
   createDivision,
   getAllDivisions,
   updateDivisionByID,
-  deleteDivisionByID
+  deleteDivisionByID,
+  getSingleDivisionBySlug
 }
