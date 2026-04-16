@@ -109,6 +109,18 @@ const deleteTour = catchAsync(
     })
   }
 )
+const getTourBySlug = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = await tourService.getTourBySlug(req.params.slug as string)
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'Tour retrieved successfully',
+      data: user
+    })
+  }
+)
 
 export const tourController = {
   createTourType,
@@ -118,5 +130,6 @@ export const tourController = {
   createTour,
   getAllTours,
   updateTour,
-  deleteTour
+  deleteTour,
+  getTourBySlug
 }

@@ -77,6 +77,12 @@ const tourSchema = new Schema<ITour>(
       type: Schema.Types.ObjectId,
       ref: 'TourType',
       required: true
+    },
+    departureLocation: {
+      type: String
+    },
+    arrivalLocation: {
+      type: String
     }
   },
   { timestamps: true }

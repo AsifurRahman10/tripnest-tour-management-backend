@@ -33,6 +33,7 @@ router.delete(
 
 // tour routes
 
+router.get('/:slug', tourController.getTourBySlug)
 router.post(
   '/create',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
