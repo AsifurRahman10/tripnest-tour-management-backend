@@ -9,7 +9,6 @@ const updateTourTypeValidation = z.object({
 
 const createTourValidation = z.object({
   title: z.string().min(4, 'Title is required'),
-  slug: z.string().min(4, 'Slug is required'),
   description: z.string().optional(),
   images: z.array(z.string()).optional(),
   location: z.string().optional(),
@@ -27,7 +26,6 @@ const createTourValidation = z.object({
 })
 const updateTourValidation = z.object({
   title: z.string().optional(),
-  slug: z.string().optional(),
   description: z.string().optional(),
   images: z.array(z.string()).optional(),
   location: z.string().optional(),

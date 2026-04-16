@@ -4,11 +4,12 @@ import { Division } from './division.model'
 
 const createDivision = async (data: IDivision) => {
   const isExist = await Division.findOne({
-    $or: [{ name: data.name }, { slug: data.slug }]
+    $or: [{ name: data.name }]
   })
   if (isExist) {
-    throw new AppError(400, 'Division with this name and slug already exists')
+    throw new AppError(400, 'Division with this name already exists')
   }
+
   const result = await Division.create(data)
   return result
 }
@@ -24,14 +25,15 @@ const updateDivisionByID = async (id: string, data: Partial<IDivision>) => {
     throw new AppError(400, 'Division not found')
   }
   const isExist = await Division.findOne({
-    $or: [{ name: data.name }, { slug: data.slug }]
+    $or: [{ name: data.name, _id: { $ne: id } }]
   })
   if (isExist) {
-    throw new AppError(400, 'Division with this name and slug already exists')
+    throw new AppError(400, 'Division with this name already exists')
   }
 
   const updateDivision = await Division.findByIdAndUpdate(id, data, {
-    new: true
+    new: true,
+    runValidators: true
   })
 
   return updateDivision
