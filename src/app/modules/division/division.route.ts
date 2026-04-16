@@ -7,12 +7,6 @@ import { divisionValidation } from './division.validation'
 
 const router = Router()
 
-router.post(
-  '/create',
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  validateRequest(divisionValidation.createDivisionValidation),
-  DivisionController.createDivision
-)
 router.patch(
   '/:id',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
@@ -23,6 +17,15 @@ router.delete(
   '/:id',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   DivisionController.deleteDivisionByID
+)
+
+router.get('/:slug', DivisionController.getSingleDivisionBySlug)
+
+router.post(
+  '/create',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(divisionValidation.createDivisionValidation),
+  DivisionController.createDivision
 )
 
 router.get('/', DivisionController.getAllDivisions)
