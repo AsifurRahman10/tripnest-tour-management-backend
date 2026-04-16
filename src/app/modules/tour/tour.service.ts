@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { Query } from 'mongoose'
 import { ITour, ITourType } from './tour.interface'
 import { TourType, Tour } from './tour.model'
+import { excludedFields } from '../../contants'
 
 const createTourTypes = async (data: ITourType) => {
   const isTourTypeExist = await TourType.findOne({ name: data.name })
@@ -45,30 +47,103 @@ const createTour = async (data: ITour) => {
   return result
 }
 
-const getAllTours = async (query: any) => {
-  const page = parseInt(query.page as string) || 1
-  const limit = parseInt(query.limit as string) || 10
-  const search = query.search || ''
-  const skip = (page - 1) * limit
+class QueryBuilder<T> {
+  public modelQuery: Query<T[], T>
+  public readonly query: Record<string, string>
 
-  const filter: any = {}
+  constructor(modelQuery: Query<T[], T>, query: Record<string, string>) {
+    this.modelQuery = modelQuery
+    this.query = query
+  }
 
-  if (query.tourType) {
-    filter.tourType = query.tourType
+  filter(): any {
+    const queryObj = { ...this.query }
+
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    excludedFields.forEach((field) => delete queryObj[field])
+    this.modelQuery = this.modelQuery.find(queryObj)
+
+    return this
   }
-  if (search) {
-    filter.title = { $regex: search, $options: 'i' }
+
+  search(searchAbleFields: string[]): this {
+    const searchQuery = {
+      $or: searchAbleFields.map((field: string) => ({
+        [field]: { $regex: this.query.search || '', $options: 'i' }
+      }))
+    }
+    this.modelQuery = this.modelQuery.find(searchQuery)
+    return this
   }
-  const total = await Tour.countDocuments(filter)
-  const result = await Tour.find(filter).skip(skip).limit(limit)
-  return {
-    data: result,
-    meta: {
+
+  sort(): this {
+    const sort = this.query.sort || '-createdAt'
+    this.modelQuery = this.modelQuery.sort(sort)
+    return this
+  }
+  fields(): this {
+    const fields = this.query.fields?.split(',').join(' ') || ''
+    this.modelQuery = this.modelQuery.select(fields)
+    return this
+  }
+  pagination(): this {
+    const page = parseInt(this.query.page as string) || 1
+    const limit = parseInt(this.query.limit as string) || 10
+    const skip = (page - 1) * limit
+
+    this.modelQuery = this.modelQuery.skip(skip).limit(limit)
+    return this
+  }
+  build() {
+    return this.modelQuery
+  }
+  async getMeta() {
+    const total = await this.modelQuery.model.countDocuments()
+    const page = parseInt(this.query.page as string) || 1
+    const limit = parseInt(this.query.limit as string) || 10
+    return {
       page,
       limit,
       total,
       totalPage: Math.ceil(total / limit)
     }
+  }
+}
+
+const getAllTours = async (query: any) => {
+  // const page = parseInt(query.page as string) || 1
+  // const limit = parseInt(query.limit as string) || 10
+  // const search = query.search || ''
+  // const skip = (page - 1) * limit
+
+  // const filter: any = {}
+
+  // if (query.tourType) {
+  //   filter.tourType = query.tourType
+  // }
+  // if (search) {
+  //   filter.title = { $regex: search, $options: 'i' }
+  // }
+  // const total = await Tour.countDocuments(filter)
+  // const result = await Tour.find(filter).skip(skip).limit(limit)
+
+  const searchAbleFields = ['title', 'description', 'location']
+
+  const queryBuilder = new QueryBuilder(Tour.find(), query)
+  const tour = await queryBuilder
+    .search(searchAbleFields)
+    .filter()
+    .sort()
+    .fields()
+    .pagination()
+
+  // const meta = await queryBuilder.getMeta()
+
+  const queryRun = await Promise.all([tour.build(), queryBuilder.getMeta()])
+  console.log(queryRun)
+  return {
+    tours: queryRun[0],
+    meta: queryRun[1]
   }
 }
 
