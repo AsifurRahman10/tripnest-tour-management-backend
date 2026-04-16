@@ -36,10 +36,11 @@ const deleteTourTypeById = async (id: string) => {
 }
 
 const createTour = async (data: ITour) => {
-  const isTourExist = await Tour.findOne({ slug: data.slug })
+  const isTourExist = await Tour.findOne({ title: data.title })
   if (isTourExist) {
     throw new Error('Tour already exists')
   }
+
   const result = await Tour.create(data)
   return result
 }
@@ -76,12 +77,7 @@ const updateTourById = async (id: string, data: Partial<ITour>) => {
   if (!isTourExist) {
     throw new Error('Tour not found')
   }
-  if (data.slug && data.slug !== isTourExist.slug) {
-    const isSlugExist = await Tour.findOne({ slug: data.slug })
-    if (isSlugExist) {
-      throw new Error('Tour with this slug already exists')
-    }
-  }
+
   const result = await Tour.findByIdAndUpdate(id, data, { new: true })
   return result
 }
