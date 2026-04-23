@@ -8,6 +8,12 @@ import { BookingValidation } from './booking.validation'
 const router = Router()
 
 router.get(
+  '/my-bookings',
+  checkAuth(...Object.values(Role)),
+  BookingController.getMyBookings
+)
+
+router.get(
   '/:id',
   checkAuth(...Object.values(Role)),
   BookingController.getBookingById
@@ -24,12 +30,6 @@ router.get(
   '/',
   checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
   BookingController.getAllBookings
-)
-
-router.get(
-  '/my-bookings',
-  checkAuth(...Object.values(Role)),
-  BookingController.getMyBookings
 )
 
 router.patch(
