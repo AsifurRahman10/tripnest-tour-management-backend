@@ -24,12 +24,13 @@ const createBooking = catchAsync(
 )
 const getAllBookings = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const bookings = await BookingService.getAllBookings()
+    const query = req.query
+    const bookings = await BookingService.getAllBookings(query)
 
     sendResponse(res, {
       statusCode: httpStatusCode.OK,
       success: true,
-      message: 'Tour updated successfully',
+      message: 'Bookings retrieved successfully',
       data: bookings
     })
   }
@@ -41,7 +42,7 @@ const getMyBookings = catchAsync(
     sendResponse(res, {
       statusCode: httpStatusCode.OK,
       success: true,
-      message: 'Tour updated successfully',
+      message: 'My bookings retrieved successfully',
       data: bookings
     })
   }
