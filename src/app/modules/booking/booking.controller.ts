@@ -17,7 +17,7 @@ const createBooking = catchAsync(
     sendResponse(res, {
       statusCode: httpStatusCode.OK,
       success: true,
-      message: 'Tour updated successfully',
+      message: 'Booking created successfully',
       data: booking
     })
   }
@@ -45,7 +45,6 @@ const getMyBookings = catchAsync(
       decodedToken.userId,
       query
     )
-    console.log(bookings)
     sendResponse(res, {
       statusCode: httpStatusCode.OK,
       success: true,
@@ -61,7 +60,7 @@ const getBookingById = catchAsync(
     sendResponse(res, {
       statusCode: httpStatusCode.OK,
       success: true,
-      message: 'Tour updated successfully',
+      message: 'Booking retrieved successfully',
       data: booking
     })
   }
@@ -76,7 +75,7 @@ const updateBooking = catchAsync(
     sendResponse(res, {
       statusCode: httpStatusCode.OK,
       success: true,
-      message: 'Tour updated successfully',
+      message: 'Booking updated successfully',
       data: booking
     })
   }
