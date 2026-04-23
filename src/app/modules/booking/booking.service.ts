@@ -8,7 +8,6 @@ import { Payment } from '../payment/payment.model'
 import { PAYMENT_STATUS } from '../payment/payment.interface'
 import { Tour } from '../tour/tour.model'
 import { sslCommerzService } from '../sslCommerz/sslCommerz.server'
-import { JwtPayload } from 'jsonwebtoken'
 import { QueryBuilder } from '../../utils/queryBuilder'
 
 const getTransactionId = () => {
