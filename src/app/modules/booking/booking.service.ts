@@ -219,12 +219,25 @@ const getMyBookings = async (userId: string, query: Record<string, string>) => {
     meta: queryRun[1]
   }
 }
-const getBookingById = async (id: string) => {}
+const getBookingById = async (id: string) => {
+  const booking = await Booking.findById(id)
+  return booking
+}
 
 const updateBookingById = async (
   id: string,
   bookingData: Partial<IBooking>
-) => {}
+) => {
+  const isBookingExist = await Booking.findById(id)
+  if (!isBookingExist) {
+    throw new AppError(httpStatusCode.NOT_FOUND, 'Booking not found')
+  }
+  const booking = await Booking.findByIdAndUpdate(id, bookingData, {
+    new: true,
+    runValidators: true
+  })
+  return booking
+}
 
 export const BookingService = {
   createBooking,
