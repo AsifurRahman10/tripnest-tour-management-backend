@@ -76,7 +76,6 @@ const getAllTours = async (query: any) => {
   // const meta = await queryBuilder.getMeta()
 
   const queryRun = await Promise.all([tour.build(), queryBuilder.getMeta()])
-  console.log(queryRun)
   return {
     tours: queryRun[0],
     meta: queryRun[1]

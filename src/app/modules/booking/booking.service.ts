@@ -8,6 +8,8 @@ import { Payment } from '../payment/payment.model'
 import { PAYMENT_STATUS } from '../payment/payment.interface'
 import { Tour } from '../tour/tour.model'
 import { sslCommerzService } from '../sslCommerz/sslCommerz.server'
+import { JwtPayload } from 'jsonwebtoken'
+import { QueryBuilder } from '../../utils/queryBuilder'
 
 const getTransactionId = () => {
   return `trans_${Date.now()}_${Math.floor(Math.random() * 1000)}`
@@ -182,7 +184,23 @@ const createBooking = async (
     throw error
   }
 }
-const getAllBookings = async () => {}
+const getAllBookings = async (query: Record<string, string>) => {
+  const searchAbleFields = ['status']
+  const queryBuilder = new QueryBuilder(Booking.find(), query)
+
+  const bookings = await queryBuilder
+    .search(searchAbleFields)
+    .filter()
+    .sort()
+    .fields()
+    .pagination()
+
+  const queryRun = await Promise.all([bookings.build(), queryBuilder.getMeta()])
+  return {
+    tours: queryRun[0],
+    meta: queryRun[1]
+  }
+}
 
 const getMyBookings = async (userId: string) => {}
 const getBookingById = async (id: string) => {}
