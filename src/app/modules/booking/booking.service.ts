@@ -202,7 +202,23 @@ const getAllBookings = async (query: Record<string, string>) => {
   }
 }
 
-const getMyBookings = async (userId: string) => {}
+const getMyBookings = async (userId: string, query: Record<string, string>) => {
+  const searchAbleFields = ['status']
+  const queryBuilder = new QueryBuilder(Booking.find({ user: userId }), query)
+
+  const bookings = await queryBuilder
+    .search(searchAbleFields)
+    .filter()
+    .sort()
+    .fields()
+    .pagination()
+
+  const queryRun = await Promise.all([bookings.build(), queryBuilder.getMeta()])
+  return {
+    tours: queryRun[0],
+    meta: queryRun[1]
+  }
+}
 const getBookingById = async (id: string) => {}
 
 const updateBookingById = async (
