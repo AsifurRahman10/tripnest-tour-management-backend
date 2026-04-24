@@ -5,6 +5,7 @@ import { User } from './user.model'
 import bcrypt from 'bcryptjs'
 import { envVars } from '../../config/config'
 import { JwtPayload } from 'jsonwebtoken'
+import { deleteImageFromCloudinary } from '../../config/cloudinary.config'
 
 const createUserService = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload
@@ -84,6 +85,10 @@ const updateUserService = async (
     new: true,
     runValidators: true
   })
+
+  if (isUserExist.image && payload.image) {
+    await deleteImageFromCloudinary(isUserExist.image)
+  }
 
   return newUpdatedUser
 }

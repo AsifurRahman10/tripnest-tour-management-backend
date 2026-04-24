@@ -11,6 +11,10 @@ import { JwtPayload } from 'jsonwebtoken'
 
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    const file = req.file
+    if (file) {
+      req.body.image = file.path
+    }
     const user = await UserServices.createUserService(req.body)
 
     sendResponse(res, {
@@ -40,11 +44,11 @@ const updateUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req?.params?.id
     const payload = req.body
-    // const token = req.headers.authorization
-    // const verifiedToken = verifyToken(
-    //   token as string,
-    //   envVars.JWT_SECRET
-    // ) as JwtPayload
+
+    const file = req.file
+    if (file) {
+      payload.image = file.path
+    }
 
     const verifiedToken = req.user
     const user = await UserServices.updateUserService(

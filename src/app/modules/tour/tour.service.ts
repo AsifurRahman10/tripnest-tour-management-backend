@@ -3,6 +3,7 @@
 import { ITour, ITourType } from './tour.interface'
 import { TourType, Tour } from './tour.model'
 import { QueryBuilder } from '../../utils/queryBuilder'
+import { deleteImageFromCloudinary } from '../../config/cloudinary.config'
 
 const createTourTypes = async (data: ITourType) => {
   const isTourTypeExist = await TourType.findOne({ name: data.name })
@@ -88,7 +89,42 @@ const updateTourById = async (id: string, data: Partial<ITour>) => {
     throw new Error('Tour not found')
   }
 
+  if (
+    data.images &&
+    data.images.length &&
+    isTourExist.images &&
+    isTourExist.images.length
+  ) {
+    data.images = [...isTourExist.images, ...(data.images as string[])]
+  }
+
+  if (
+    data.deletedImages &&
+    data.deletedImages.length &&
+    isTourExist.images &&
+    isTourExist.images.length
+  ) {
+    const restDBImages = isTourExist.images.filter(
+      (image) => !(data.deletedImages as string[]).includes(image)
+    )
+
+    const updatedPayloadImages = (data.images || [])
+      .filter((imageUrl) => !restDBImages.includes(imageUrl))
+      .filter(
+        (imageUrl) => !(data.deletedImages as string[]).includes(imageUrl)
+      )
+    data.images = [...updatedPayloadImages, ...restDBImages]
+  }
+
   const result = await Tour.findByIdAndUpdate(id, data, { new: true })
+
+  if (data.deletedImages) {
+    await Promise.all(
+      (data.deletedImages as string[]).map(
+        async (imageUrl) => await deleteImageFromCloudinary(imageUrl)
+      )
+    )
+  }
   return result
 }
 

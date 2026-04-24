@@ -43,7 +43,8 @@ const updateTourValidation = z.object({
   minAge: z.number().optional(),
   tourType: z.string().optional(),
   departureLocation: z.string().optional(),
-  arrivalLocation: z.string().optional()
+  arrivalLocation: z.string().optional(),
+  deletedImages: z.array(z.string()).optional()
 })
 
 export const tourValidation = {
