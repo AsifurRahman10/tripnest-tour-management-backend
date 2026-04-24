@@ -48,6 +48,7 @@ router.get('/', tourController.getAllTours)
 router.patch(
   '/:id',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  multerUpload.array('files'),
   validateRequest(tourValidation.updateTourValidation),
   tourController.updateTour
 )

@@ -91,6 +91,12 @@ const getAllTours = catchAsync(
 
 const updateTour = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    const files = req.files as Express.Multer.File[]
+
+    if (files) {
+      const imageUrls = files.map((file) => file.path)
+      req.body.images = imageUrls
+    }
     const user = await tourService.updateTourById(
       req.params.id as string,
       req.body

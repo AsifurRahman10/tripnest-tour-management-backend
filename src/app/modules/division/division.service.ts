@@ -37,7 +37,11 @@ const updateDivisionByID = async (id: string, data: Partial<IDivision>) => {
     runValidators: true
   })
 
-  if (isDivisionExist.thumbnail) {
+  if (
+    isDivisionExist.thumbnail &&
+    data.thumbnail &&
+    isDivisionExist.thumbnail !== data.thumbnail
+  ) {
     await deleteImageFromCloudinary(isDivisionExist.thumbnail)
   }
 

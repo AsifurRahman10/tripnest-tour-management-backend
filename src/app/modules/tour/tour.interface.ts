@@ -23,4 +23,5 @@ export interface ITour {
   tourType: Types.ObjectId
   departureLocation?: string
   arrivalLocation?: string
+  deletedImages?: string[]
 }
