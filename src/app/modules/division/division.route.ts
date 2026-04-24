@@ -4,6 +4,7 @@ import { Role } from '../user/user.interface'
 import validateRequest from '../../middlewares/validateRequest'
 import { DivisionController } from './division.controller'
 import { divisionValidation } from './division.validation'
+import { multerUpload } from '../../config/multer.config'
 
 const router = Router()
 
@@ -11,6 +12,7 @@ router.patch(
   '/:id',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(divisionValidation.updateDivisionValidation),
+  multerUpload.single('file'),
   DivisionController.updateDivisionByID
 )
 router.delete(

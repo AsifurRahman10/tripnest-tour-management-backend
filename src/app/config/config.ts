@@ -29,6 +29,11 @@ interface EnvProps {
     SSL_FRONTEND_FAIL_URL: string
     SSL_FRONTEND_CANCEL_URL: string
   }
+  cloudinary: {
+    CLOUD_NAME: string
+    API_KEY: string
+    API_SECRET: string
+  }
 }
 
 const loadEnv = (): EnvProps => {
@@ -56,7 +61,10 @@ const loadEnv = (): EnvProps => {
     'SSL_BACKEND_CANCEL_URL',
     'SSL_FRONTEND_SUCCESS_URL',
     'SSL_FRONTEND_FAIL_URL',
-    'SSL_FRONTEND_CANCEL_URL'
+    'SSL_FRONTEND_CANCEL_URL',
+    'CLOUD_NAME',
+    'API_KEY',
+    'API_SECRET'
   ]
 
   envArray.forEach((key) => {
@@ -90,6 +98,11 @@ const loadEnv = (): EnvProps => {
       SSL_FRONTEND_SUCCESS_URL: process.env.SSL_FRONTEND_SUCCESS_URL as string,
       SSL_FRONTEND_FAIL_URL: process.env.SSL_FRONTEND_FAIL_URL as string,
       SSL_FRONTEND_CANCEL_URL: process.env.SSL_FRONTEND_CANCEL_URL as string
+    },
+    cloudinary: {
+      CLOUD_NAME: process.env.CLOUD_NAME as string,
+      API_KEY: process.env.API_KEY as string,
+      API_SECRET: process.env.API_SECRET as string
     }
   }
 }
