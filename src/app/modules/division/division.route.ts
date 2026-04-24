@@ -11,6 +11,7 @@ const router = Router()
 router.patch(
   '/:id',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  multerUpload.single('file'),
   validateRequest(divisionValidation.updateDivisionValidation),
   DivisionController.updateDivisionByID
 )
