@@ -7,4 +7,14 @@ cloudinary.config({
   api_secret: envVars.cloudinary.CLOUDINARY_API_SECRET
 })
 
+export const deleteImageFromCloudinary = async (url: string) => {
+  const regex = /\/upload\/v\d+\/(.+?)\.(jpg|jpeg|png|gif|webp)$/i
+  const match = url.match(regex)
+  if (match && match[1]) {
+    const publicId = match[1]
+    await cloudinaryUpload.uploader.destroy(publicId)
+    console.log(`${publicId} image has been deleted from Cloudinary`)
+  }
+}
+
 export const cloudinaryUpload = cloudinary

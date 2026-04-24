@@ -3,14 +3,28 @@ import { NextFunction, Request, Response } from 'express'
 import { ZodError } from 'zod'
 import { envVars } from '../config/config'
 import AppError from '../errorHelpers/AppError'
+import { deleteImageFromCloudinary } from '../config/cloudinary.config'
 
-const globalErrorHandler = (
+const globalErrorHandler = async (
   err: any,
   req: Request,
   res: Response,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction
 ) => {
+  // cloudinary error
+  if (req.file) {
+    await deleteImageFromCloudinary(req.file.path)
+  }
+
+  if (req.files && Array.isArray(req.files) && req.files.length) {
+    await Promise.all(
+      req.files.map((file: Express.Multer.File) =>
+        deleteImageFromCloudinary(file.path)
+      )
+    )
+  }
+
   let statusCode = 500
   let message = 'Something went wrong'
   let errorSource: any = []
