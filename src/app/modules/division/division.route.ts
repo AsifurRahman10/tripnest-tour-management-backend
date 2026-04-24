@@ -12,7 +12,6 @@ router.patch(
   '/:id',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(divisionValidation.updateDivisionValidation),
-  multerUpload.single('file'),
   DivisionController.updateDivisionByID
 )
 router.delete(
@@ -26,6 +25,7 @@ router.get('/:slug', DivisionController.getSingleDivisionBySlug)
 router.post(
   '/create',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  multerUpload.single('file'),
   validateRequest(divisionValidation.createDivisionValidation),
   DivisionController.createDivision
 )
