@@ -4,6 +4,7 @@ import { Role } from '../user/user.interface'
 import { tourController } from './tour.controller'
 import { tourValidation } from './tour.validation'
 import validateRequest from '../../middlewares/validateRequest'
+import { multerUpload } from '../../config/multer.config'
 
 const router = Router()
 
@@ -37,6 +38,7 @@ router.get('/:slug', tourController.getTourBySlug)
 router.post(
   '/create',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  multerUpload.array('files'),
   validateRequest(tourValidation.createTourValidation),
   tourController.createTour
 )
