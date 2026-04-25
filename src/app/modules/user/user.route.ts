@@ -8,6 +8,8 @@ import { multerUpload } from '../../config/multer.config'
 
 const router = Router()
 
+router.get('/me', checkAuth(...Object.values(Role)), UserControllers.getMe)
+
 router.post(
   '/register',
   multerUpload.single('file'),
