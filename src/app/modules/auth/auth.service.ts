@@ -1,6 +1,7 @@
+import { passport } from 'passport'
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import AppError from '../../errorHelpers/AppError'
-import { IsActive, IUser } from '../user/user.interface'
+import { IAuthProvider, IsActive, IUser } from '../user/user.interface'
 import { User } from '../user/user.model'
 import httpStatusCode from 'http-status-codes'
 import bcrypt from 'bcryptjs'
@@ -8,6 +9,7 @@ import { createUserTokens } from '../../utils/userTokens'
 import { generateJwt, verifyToken } from '../../utils/jwt'
 import { envVars } from '../../config/config'
 import { JwtPayload } from 'jsonwebtoken'
+import { th } from 'zod/v4/locales'
 
 const credentialLogin = async (payload: Partial<IUser>) => {
   const { email, password } = payload
@@ -64,7 +66,7 @@ const generateAccessToken = async (refreshToken: string) => {
   )
   return { accessToken }
 }
-const resetPassword = async (
+const changePassword = async (
   decoderToken: JwtPayload,
   oldPassword: string,
   newPassword: string
@@ -86,9 +88,65 @@ const resetPassword = async (
   user!.password = hashedNewPassword
   await user?.save()
 }
+const resetPassword = async (
+  decoderToken: JwtPayload,
+  oldPassword: string,
+  newPassword: string
+) => {
+  // const user = await User.findOne({ email: decoderToken.email })
+
+  // const isOldPasswordMatch = await bcrypt.compare(
+  //   oldPassword,
+  //   user?.password as string
+  // )
+  // if (!isOldPasswordMatch) {
+  //   throw new AppError(httpStatusCode.FORBIDDEN, 'Old password does not match')
+  // }
+  // const hashedNewPassword = await bcrypt.hash(
+  //   newPassword,
+  //   Number(envVars.BCRYPT_SALT_ROUND)
+  // )
+
+  // user!.password = hashedNewPassword
+  // await user?.save()
+
+  return {}
+}
+const setPassword = async (userId: string, password: string) => {
+  const user = await User.findOne({ _id: userId })
+
+  if (!user) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'User does not exist')
+  }
+
+  if (user.password && user.auths.some((auth) => auth.provider === 'google')) {
+    throw new AppError(
+      httpStatusCode.FORBIDDEN,
+      'You have already set password for this account'
+    )
+  }
+
+  const hashPassword = await bcrypt.hash(
+    password,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  )
+
+  const credentialProvider: IAuthProvider = {
+    provider: 'credential',
+    providerID: user.email
+  }
+  const auths: IAuthProvider[] = [...user.auths, credentialProvider]
+  user.auths = auths
+  user.password = hashPassword
+  await user.save()
+
+  return {}
+}
 
 export const AuthService = {
   credentialLogin,
   generateAccessToken,
-  resetPassword
+  changePassword,
+  resetPassword,
+  setPassword
 }

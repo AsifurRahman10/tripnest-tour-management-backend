@@ -10,9 +10,19 @@ router.post('/login', AuthController.credentialLogin)
 router.get('/refresh-token', AuthController.getNewAccessToken)
 router.post('/logout', AuthController.logout)
 router.post(
+  '/change-password',
+  checkAuth(...Object.values(Role)),
+  AuthController.changePassword
+)
+router.post(
   '/reset-password',
   checkAuth(...Object.values(Role)),
   AuthController.resetPassword
+)
+router.post(
+  '/set-password',
+  checkAuth(...Object.values(Role)),
+  AuthController.setPassword
 )
 
 router.get(
