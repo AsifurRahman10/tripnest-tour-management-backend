@@ -1,6 +1,9 @@
 import { Response } from 'express'
 
 interface TMeta {
+  page: number
+  limit: number
+  totalPages: number
   total: number
 }
 
@@ -18,7 +21,7 @@ const sendResponse = <T>(res: Response, data: TResponseType<T>) => {
     success: data.success,
     message: data.message,
     data: data.data,
-    meta: data.meta,
+    meta: data.meta
   })
 }
 

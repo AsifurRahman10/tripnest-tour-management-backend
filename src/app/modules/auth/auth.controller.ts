@@ -11,6 +11,7 @@ import AppError from '../../errorHelpers/AppError'
 import { createUserTokens } from '../../utils/userTokens'
 import { envVars } from '../../config/config'
 import passport from 'passport'
+import { JwtPayload } from 'jsonwebtoken'
 
 const credentialLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -76,6 +77,26 @@ const logout = catchAsync(
     })
   }
 )
+const changePassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decoderToken = req.user
+    const oldPassword = req.body.oldPassword
+    const newPassword = req.body.newPassword
+
+    await AuthService.changePassword(
+      decoderToken as IUser,
+      oldPassword,
+      newPassword
+    )
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'Password changed successfully',
+      data: true
+    })
+  }
+)
 const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const decoderToken = req.user
@@ -92,6 +113,21 @@ const resetPassword = catchAsync(
       statusCode: httpStatusCode.OK,
       success: true,
       message: 'Password reset successfully',
+      data: true
+    })
+  }
+)
+const setPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decoderToken = req.user as JwtPayload
+    const password = req.body.password
+
+    await AuthService.setPassword(decoderToken.userId, password)
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'Password set successfully',
       data: true
     })
   }
@@ -122,6 +158,8 @@ export const AuthController = {
   credentialLogin,
   getNewAccessToken,
   logout,
+  changePassword,
+  googleCallback,
   resetPassword,
-  googleCallback
+  setPassword
 }
