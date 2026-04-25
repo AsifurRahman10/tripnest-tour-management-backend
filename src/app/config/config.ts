@@ -34,6 +34,12 @@ interface EnvProps {
     CLOUDINARY_API_KEY: string
     CLOUDINARY_API_SECRET: string
   }
+  SMTP: {
+    SMTP_HOST: string
+    SMTP_PORT: string
+    SMTP_USER: string
+    SMTP_PASSWORD: string
+  }
 }
 
 const loadEnv = (): EnvProps => {
@@ -64,7 +70,11 @@ const loadEnv = (): EnvProps => {
     'SSL_FRONTEND_CANCEL_URL',
     'CLOUDINARY_CLOUD_NAME',
     'CLOUDINARY_API_KEY',
-    'CLOUDINARY_API_SECRET'
+    'CLOUDINARY_API_SECRET',
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_USER',
+    'SMTP_PASSWORD'
   ]
 
   envArray.forEach((key) => {
@@ -103,6 +113,12 @@ const loadEnv = (): EnvProps => {
       CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
       CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
       CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string
+    },
+    SMTP: {
+      SMTP_HOST: process.env.SMTP_HOST as string,
+      SMTP_PORT: process.env.SMTP_PORT as string,
+      SMTP_USER: process.env.SMTP_USER as string,
+      SMTP_PASSWORD: process.env.SMTP_PASSWORD as string
     }
   }
 }
