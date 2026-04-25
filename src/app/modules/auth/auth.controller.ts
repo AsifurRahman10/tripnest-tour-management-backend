@@ -100,14 +100,7 @@ const changePassword = catchAsync(
 const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const decoderToken = req.user
-    const oldPassword = req.body.oldPassword
-    const newPassword = req.body.newPassword
-
-    await AuthService.resetPassword(
-      decoderToken as IUser,
-      oldPassword,
-      newPassword
-    )
+    await AuthService.resetPassword(decoderToken as IUser, req.body)
 
     sendResponse(res, {
       statusCode: httpStatusCode.OK,

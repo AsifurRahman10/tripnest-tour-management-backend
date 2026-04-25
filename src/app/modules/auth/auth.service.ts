@@ -90,27 +90,24 @@ const changePassword = async (
 }
 const resetPassword = async (
   decoderToken: JwtPayload,
-  oldPassword: string,
-  newPassword: string
+  payload: Record<string, string>
 ) => {
-  // const user = await User.findOne({ email: decoderToken.email })
+  if (decoderToken?.userId !== payload.id) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'Invalid user')
+  }
+  const user = await User.findOne({ _id: decoderToken.userId })
 
-  // const isOldPasswordMatch = await bcrypt.compare(
-  //   oldPassword,
-  //   user?.password as string
-  // )
-  // if (!isOldPasswordMatch) {
-  //   throw new AppError(httpStatusCode.FORBIDDEN, 'Old password does not match')
-  // }
-  // const hashedNewPassword = await bcrypt.hash(
-  //   newPassword,
-  //   Number(envVars.BCRYPT_SALT_ROUND)
-  // )
+  if (!user) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'User does not exist')
+  }
 
-  // user!.password = hashedNewPassword
-  // await user?.save()
+  const hashPassword = await bcrypt.hash(
+    payload.password,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  )
 
-  return {}
+  user.password = hashPassword
+  await user.save()
 }
 const setPassword = async (userId: string, password: string) => {
   const user = await User.findOne({ _id: userId })
