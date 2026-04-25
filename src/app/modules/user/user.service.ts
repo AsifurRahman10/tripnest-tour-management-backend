@@ -93,8 +93,17 @@ const updateUserService = async (
   return newUpdatedUser
 }
 
+const getMe = async (userId: string) => {
+  const user = await User.findById(userId)
+  if (!user) {
+    throw new AppError(httpStatusCode.NOT_FOUND, 'User not found')
+  }
+  return user
+}
+
 export const UserServices = {
   createUserService,
   getAllUserService,
-  updateUserService
+  updateUserService,
+  getMe
 }
