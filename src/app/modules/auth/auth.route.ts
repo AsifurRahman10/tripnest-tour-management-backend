@@ -3,6 +3,7 @@ import { AuthController } from './auth.controller'
 import checkAuth from '../../middlewares/checkAuth'
 import { Role } from '../user/user.interface'
 import passport from 'passport'
+import { envVars } from '../../config/config'
 
 const router = Router()
 
@@ -24,6 +25,7 @@ router.post(
   checkAuth(...Object.values(Role)),
   AuthController.setPassword
 )
+router.post('/forget-password', AuthController.forgetPassword)
 
 router.get(
   '/google',
@@ -38,7 +40,9 @@ router.get(
 
 router.get(
   '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', {
+    failureRedirect: `${envVars.FRONTEND_URL}/login?error=There is some issue with your google login, please contact support team`
+  }),
   AuthController.googleCallback
 )
 export const AuthRouter = router
