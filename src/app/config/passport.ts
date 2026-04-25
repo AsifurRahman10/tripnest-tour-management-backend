@@ -7,7 +7,7 @@ import {
 } from 'passport-google-oauth20'
 import { envVars } from './config'
 import { User } from '../modules/user/user.model'
-import { Role } from '../modules/user/user.interface'
+import { IsActive, Role } from '../modules/user/user.interface'
 import { Strategy as localStrategy } from 'passport-local'
 import bcrypt from 'bcryptjs'
 
@@ -19,6 +19,20 @@ passport.use(
         const isUserExist = await User.findOne({ email })
         if (!isUserExist) {
           return done(null, false, { message: 'User does not exist' })
+        }
+
+        if (isUserExist.isDeleted) {
+          return done(null, false, { message: 'User is deleted' })
+        }
+
+        if (!isUserExist.isVerified) {
+          return done(null, false, { message: 'User is not verified' })
+        }
+        if (
+          isUserExist.isActive === IsActive.BLOCK ||
+          isUserExist.isActive === IsActive.INACTIVE
+        ) {
+          return done(null, false, { message: 'User is not active' })
         }
 
         const isRegisterWithGoogle = isUserExist.auths.some(
@@ -64,10 +78,25 @@ passport.use(
       if (!email) {
         return done(null, false, { message: 'email does not exist' })
       }
-      let user = await User.findOne({ email })
+      let isUserExist = await User.findOne({ email })
 
-      if (!user) {
-        user = await User.create({
+      if (isUserExist?.isDeleted) {
+        return done(null, false, { message: 'User is deleted' })
+      }
+
+      if (!isUserExist?.isVerified) {
+        return done(null, false, { message: 'User is not verified' })
+      }
+      if (
+        isUserExist &&
+        (isUserExist?.isActive === IsActive.BLOCK ||
+          isUserExist?.isActive === IsActive.INACTIVE)
+      ) {
+        return done(null, false, { message: 'User is not active' })
+      }
+
+      if (!isUserExist) {
+        isUserExist = await User.create({
           email,
           name: profile.displayName,
           image: profile.photos?.[0].value,
@@ -82,7 +111,7 @@ passport.use(
         })
       }
 
-      return done(null, user)
+      return done(null, isUserExist)
     }
   )
 )

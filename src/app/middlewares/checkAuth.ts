@@ -35,15 +35,19 @@ const checkAuth =
       if (!isUserExist) {
         throw new AppError(httpStatusCode.FORBIDDEN, 'User does not exist')
       }
+
+      if (isUserExist.isDeleted) {
+        throw new AppError(httpStatusCode.FORBIDDEN, 'User is deleted')
+      }
+
+      if (!isUserExist.isVerified) {
+        throw new AppError(httpStatusCode.FORBIDDEN, 'User is not verified')
+      }
       if (
         isUserExist.isActive === IsActive.BLOCK ||
         isUserExist.isActive === IsActive.INACTIVE
       ) {
         throw new AppError(httpStatusCode.FORBIDDEN, 'User is not active')
-      }
-
-      if (isUserExist.isDeleted) {
-        throw new AppError(httpStatusCode.FORBIDDEN, 'User is deleted')
       }
       req.user = verifiedToken
       next()

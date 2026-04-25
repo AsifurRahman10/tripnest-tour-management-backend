@@ -9,7 +9,7 @@ import { createUserTokens } from '../../utils/userTokens'
 import { generateJwt, verifyToken } from '../../utils/jwt'
 import { envVars } from '../../config/config'
 import { JwtPayload } from 'jsonwebtoken'
-import { th } from 'zod/v4/locales'
+import jwt from 'jsonwebtoken'
 
 const credentialLogin = async (payload: Partial<IUser>) => {
   const { email, password } = payload
@@ -142,11 +142,43 @@ const setPassword = async (userId: string, password: string) => {
 
   return {}
 }
+const forgetPassword = async (userId: string) => {
+  const isUserExist = await User.findOne({ _id: userId })
+  if (!isUserExist) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'User does not exist')
+  }
+  if (isUserExist?.isDeleted) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'User is deleted')
+  }
+
+  if (!isUserExist?.isVerified) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'User is not verified')
+  }
+  if (
+    isUserExist &&
+    (isUserExist?.isActive === IsActive.BLOCK ||
+      isUserExist?.isActive === IsActive.INACTIVE)
+  ) {
+    throw new AppError(httpStatusCode.FORBIDDEN, 'User is not active')
+  }
+  const jwtPayload = {
+    userId: isUserExist._id,
+    email: isUserExist.email,
+    role: isUserExist.role
+  }
+
+  const token = jwt.sign(jwtPayload, envVars.JWT_SECRET, {
+    expiresIn: '10m'
+  })
+  const resetLink = `${envVars.FRONTEND_URL}/reset-password?userId=${isUserExist._id}&token=${token}`
+  return { resetLink }
+}
 
 export const AuthService = {
   credentialLogin,
   generateAccessToken,
   changePassword,
   resetPassword,
-  setPassword
+  setPassword,
+  forgetPassword
 }

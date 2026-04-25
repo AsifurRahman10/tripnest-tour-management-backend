@@ -132,6 +132,21 @@ const setPassword = catchAsync(
     })
   }
 )
+const forgetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decoderToken = req.user as JwtPayload
+    const password = req.body.password
+
+    await AuthService.forgetPassword(decoderToken.userId)
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'Password reset successfully',
+      data: true
+    })
+  }
+)
 const googleCallback = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     let redirectTo = req.query.state ? (req.query.state as string) : ''
@@ -161,5 +176,6 @@ export const AuthController = {
   changePassword,
   googleCallback,
   resetPassword,
-  setPassword
+  setPassword,
+  forgetPassword
 }
