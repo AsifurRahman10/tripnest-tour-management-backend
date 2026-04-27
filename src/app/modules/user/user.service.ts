@@ -44,9 +44,25 @@ const updateUserService = async (
   payload: Partial<IUser>,
   token: JwtPayload
 ) => {
+  if (token.role === Role.USER || token.role === Role.GUIDE) {
+    if (token.id !== userId) {
+      throw new AppError(
+        httpStatusCode.FORBIDDEN,
+        'You are not authorized for this action'
+      )
+    }
+  }
   const isUserExist = await User.findById(userId)
+
   if (!isUserExist) {
     throw new AppError(httpStatusCode.NOT_FOUND, 'User not found')
+  }
+
+  if (isUserExist.role === Role.SUPER_ADMIN && token.role === Role.ADMIN) {
+    throw new AppError(
+      httpStatusCode.FORBIDDEN,
+      'You are not authorized for this action'
+    )
   }
 
   if (isUserExist.isDeleted || isUserExist.isActive === IsActive.BLOCK) {
@@ -60,12 +76,12 @@ const updateUserService = async (
         'You are not authorized for this action'
       )
     }
-    if (payload.role === Role.SUPER_ADMIN && token.role === Role.ADMIN) {
-      throw new AppError(
-        httpStatusCode.FORBIDDEN,
-        'You are not authorized for this action'
-      )
-    }
+    // if (payload.role === Role.SUPER_ADMIN && token.role === Role.ADMIN) {
+    //   throw new AppError(
+    //     httpStatusCode.FORBIDDEN,
+    //     'You are not authorized for this action'
+    //   )
+    // }
   }
 
   if (payload?.isActive || payload?.isDeleted || payload?.isVerified) {
