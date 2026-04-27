@@ -4,6 +4,6 @@ import { OtpController } from './otp.controller'
 const router = Router()
 
 router.post('/send', OtpController.sendOtp)
-// router.post('/verify', OtpController.verifyOtp)
+router.post('/verify', OtpController.verifyOtp)
 
 export const OtpRoute = router
