@@ -6,14 +6,17 @@ import AppError from '../errorHelpers/AppError'
 interface IInvoiceData {
   transactionId: string
   amount: number
-  bookingDate: string
+  bookingDate: Date
   userName: string
   tourTitle: string
   guestCount: number
   totalAmount: number
 }
 
-const generatePdf = async (invoiceData: IInvoiceData, logoPath?: string) => {
+const generatePdf = async (
+  invoiceData: IInvoiceData,
+  logoPath?: string
+): Promise<Buffer<ArrayBufferLike>> => {
   try {
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({ size: 'A4', margin: 50 })
@@ -33,30 +36,40 @@ const generatePdf = async (invoiceData: IInvoiceData, logoPath?: string) => {
       )
       const finalLogoPath = logoPath || defaultLogoPath
 
+      // Logo - left side
       if (fs.existsSync(finalLogoPath)) {
-        doc.image(finalLogoPath, 50, 50, { width: 80 })
+        doc.image(finalLogoPath, 50, 30, { width: 100 })
       }
 
-      doc.fontSize(24).font('Helvetica-Bold').text('INVOICE', 350, 60)
-
+      // INVOICE Title - right side
       doc
-        .fontSize(11)
-        .font('Helvetica')
-        .text('Tripnest', 350, 100)
-        .text('123 Tour Street, Dhaka', 350, 115)
-        .text('Bangladesh', 350, 130)
-        .text('Email: info@tripnest.com', 350, 145)
+        .fontSize(24)
+        .font('Helvetica-Bold')
+        .text('INVOICE', 300, 40, { align: 'right', width: 260 })
 
-      // Bill To Section
-      doc.fontSize(11).font('Helvetica-Bold').text('BILL TO:', 50, 200)
+      // Company Info - right side
       doc
         .fontSize(10)
         .font('Helvetica')
-        .text(invoiceData.userName, 50, 220)
-        .text('Booking Reference: #' + invoiceData.transactionId, 50, 235)
+        .text('123 Tour Street, Dhaka, Bangladesh', 300, 80, {
+          align: 'right',
+          width: 260
+        })
+        .text('Email: info@tripnest.com', 300, 95, {
+          align: 'right',
+          width: 260
+        })
+
+      // Bill To Section - left aligned
+      doc.fontSize(11).font('Helvetica-Bold').text('BILL TO:', 50, 150)
+      doc
+        .fontSize(10)
+        .font('Helvetica')
+        .text(invoiceData.userName, 50, 170)
+        .text('Booking Reference: #' + invoiceData.transactionId, 50, 185)
 
       // Invoice Details Table Header
-      const tableTop = 280
+      const tableTop = 220
       const col1 = 50
       const col2 = 200
       const col3 = 350
@@ -67,19 +80,22 @@ const generatePdf = async (invoiceData: IInvoiceData, logoPath?: string) => {
         .font('Helvetica-Bold')
         .text('Invoice No:', col1, tableTop)
         .text('Issue Date:', col2, tableTop)
-        .text('Total Amount:', col4, tableTop)
+        .text('Total Amount:', col3, tableTop)
 
       doc
         .fontSize(9)
         .font('Helvetica')
         .text(invoiceData.transactionId, col1, tableTop + 20)
-        .text(invoiceData.bookingDate, col2, tableTop + 20)
-        .text(`BDT ${invoiceData.totalAmount}`, col4, tableTop + 20)
+        .text(
+          invoiceData.bookingDate.toISOString().split('T')[0],
+          col2,
+          tableTop + 20
+        )
+        .text(`BDT ${invoiceData.totalAmount}`, col3, tableTop + 20)
 
       // Items Table
-      const itemsTop = 340
+      const itemsTop = 280
       const boxTop = itemsTop - 10
-      //   const boxHeight = 200
 
       // Table header
       doc.rect(col1 - 5, boxTop, 510, 25).stroke()
@@ -103,15 +119,19 @@ const generatePdf = async (invoiceData: IInvoiceData, logoPath?: string) => {
         .text(`BDT ${invoiceData.amount}`, col3, boxTop + 33)
         .text(`BDT ${invoiceData.totalAmount}`, col4, boxTop + 33)
 
-      // Total
+      // Total - single line
       const totalTop = boxTop + 80
       doc.rect(col1 - 5, totalTop, 510, 30).stroke()
 
       doc
         .fontSize(11)
         .font('Helvetica-Bold')
-        .text('Total Amount (BDT):', col3 - 40, totalTop + 8)
-        .text(`BDT ${invoiceData.totalAmount}`, col4, totalTop + 8)
+        .text(
+          `Total Amount (BDT): BDT ${invoiceData.totalAmount}`,
+          col1,
+          totalTop + 8,
+          { width: 490, align: 'right' }
+        )
 
       // Footer
       doc

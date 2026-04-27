@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { uploadBufferToCloudinary } from '../../config/cloudinary.config'
 import AppError from '../../errorHelpers/AppError'
+import { generatePdf, IInvoiceData } from '../../utils/invoice'
+import { sendEmail } from '../../utils/sendEmail'
 import { BOOKING_STATUS } from '../booking/booking.interface'
 import { Booking } from '../booking/booking.model'
 import { sslCommerzService } from '../sslCommerz/sslCommerz.server'
+import { ITour } from '../tour/tour.interface'
+import { IUser } from '../user/user.interface'
 import { PAYMENT_STATUS } from './payment.interface'
 import { Payment } from './payment.model'
 import httpStatusCode from 'http-status-codes'
@@ -52,6 +57,8 @@ const successPayment = async (query: Record<string, string>) => {
     { status: BOOKING_STATUS.CONFIRM },
     { new: true }
   )
+    .populate('user', 'name email')
+    .populate('tour', 'title')
 
   if (!updatedBooking) {
     // ⚠️ rollback manually if booking fails
@@ -61,6 +68,49 @@ const successPayment = async (query: Record<string, string>) => {
 
     throw new Error('Booking update failed')
   }
+
+  const pdfPayload: IInvoiceData = {
+    transactionId: updatePayment.transactionId,
+    amount: updatePayment.amount,
+    bookingDate: updatedBooking?.createdAt as Date,
+    userName: (updatedBooking?.user as unknown as IUser).name,
+    tourTitle: (updatedBooking?.tour as unknown as ITour).title || '',
+    guestCount: updatedBooking?.guestCount || 0,
+    totalAmount: updatePayment.amount
+  }
+
+  const pdfBuffer = await generatePdf(pdfPayload)
+
+  const pdfUploadData = await uploadBufferToCloudinary(
+    pdfBuffer,
+    `invoice-${updatePayment.transactionId}`
+  )
+
+  if (!pdfUploadData) {
+    throw new AppError(500, 'PDF upload failed')
+  }
+
+  await Payment.findByIdAndUpdate(
+    updatePayment._id,
+    {
+      invoiceUrl: pdfUploadData.secure_url
+    },
+    { runValidators: true }
+  )
+
+  await sendEmail({
+    to: (updatedBooking?.user as unknown as IUser).email,
+    subject: 'Tripnest Booking Invoice',
+    templateName: 'invoice',
+    templateData: pdfPayload,
+    attachment: [
+      {
+        filename: `invoice-${updatePayment.transactionId}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      }
+    ]
+  })
 
   return {
     success: true,

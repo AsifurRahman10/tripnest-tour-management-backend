@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h2 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      p {
+        line-height: 1.6;
+        margin-bottom: 15px;
+        color: #555;
+      }
+      .highlight {
+        font-weight: bold;
+        color: #2c3e50;
+      }
+      .footer {
+        background-color: #f9f9f9;
+        color: #888;
+        font-size: 12px;
+        text-align: center;
+        padding: 15px;
+        border-top: 1px solid #eee;
+        margin-top: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Booking Confirmation</h2>
+      <p>Dear <span class="highlight"><%= userName %></span>,</p>
+      <p>
+        Thank you for booking with Tripnest! Your payment has been successfully
+        processed. Your invoice is attached to this email for your records.
+      </p>
+      <p>
+        Your booking for <span class="highlight"><%= tourTitle %></span> is now
+        confirmed. Please keep this invoice safe for future reference.
+      </p>
+      <p>
+        If you have any questions or need assistance, please don't hesitate to
+        contact us at
+        <a href="mailto:support@tripnest.com">support@tripnest.com</a>.
+      </p>
+      <div class="footer">
+        &copy; Tripnest Tour Management. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>
