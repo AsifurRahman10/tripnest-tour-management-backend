@@ -203,9 +203,20 @@ const initPayment = async (bookingId: string) => {
   }
 }
 
+const getInvoice = async (paymentId: string) => {
+  const payment = await Payment.findById(paymentId).select('invoiceUrl')
+
+  if (!payment) {
+    throw new AppError(httpStatusCode.NOT_FOUND, 'Payment not found')
+  }
+
+  return payment.invoiceUrl
+}
+
 export const PaymentService = {
   successPayment,
   failPayment,
   cancelPayment,
-  initPayment
+  initPayment,
+  getInvoice
 }

@@ -52,9 +52,21 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
   }
 })
 
+const getInvoice = catchAsync(async (req: Request, res: Response) => {
+  const paymentId = req.params.paymentId
+  const result = await PaymentService.getInvoice(paymentId as string)
+  sendResponse(res, {
+    statusCode: httpStatusCode.OK,
+    success: true,
+    message: 'Tour updated successfully',
+    data: result
+  })
+})
+
 export const PaymentController = {
   successPayment,
   failPayment,
   cancelPayment,
-  initPayment
+  initPayment,
+  getInvoice
 }
