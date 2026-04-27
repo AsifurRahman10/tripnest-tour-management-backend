@@ -5,6 +5,7 @@ import mongoose from 'mongoose'
 import app from './app'
 import seedSuperAdmin from './app/utils/seedSuperAdmin'
 import { envVars } from './app/config/config'
+import { connectRedis } from './app/config/redis.config'
 let server: Server
 
 const startServer = async () => {
@@ -56,4 +57,5 @@ process.on('SIGTERM', (err) => {
 ;(async () => {
   await startServer()
   await seedSuperAdmin()
+  await connectRedis()
 })()
