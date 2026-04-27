@@ -18,21 +18,13 @@ export const createUserZodSchema = z.object({
 
   image: z.string().url('Image must be a valid URL').optional(),
 
-  address: z.string().optional(),
+  address: z.string().optional()
 })
 
 export const updateUserZodSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').optional(),
 
   email: z.string().email('Invalid email format').optional(),
-
-  password: z
-    .string()
-    .regex(
-      /^(?=.*[A-Z])(?=.*\d).{8,}$/,
-      'Password must be at least 8 characters and include one uppercase letter and one number'
-    )
-    .optional(),
 
   phone: z.string().optional(),
 
@@ -46,10 +38,10 @@ export const updateUserZodSchema = z.object({
 
   isDeleted: z.boolean().optional(),
 
-  isVerified: z.string().optional(),
+  isVerified: z.string().optional()
 })
 
 export const userValidation = {
   createUserZodSchema,
-  updateUserZodSchema,
+  updateUserZodSchema
 }

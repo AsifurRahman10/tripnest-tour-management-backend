@@ -26,6 +26,7 @@ router.patch(
   '/:id',
   multerUpload.single('file'),
   checkAuth(...Object.values(Role)),
+  validateRequest(userValidation.updateUserZodSchema),
   UserControllers.updateUser
 )
 
