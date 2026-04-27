@@ -28,6 +28,7 @@ interface EnvProps {
     SSL_FRONTEND_SUCCESS_URL: string
     SSL_FRONTEND_FAIL_URL: string
     SSL_FRONTEND_CANCEL_URL: string
+    SSL_IPN_URL: string
   }
   cloudinary: {
     CLOUDINARY_CLOUD_NAME: string
@@ -84,7 +85,8 @@ const loadEnv = (): EnvProps => {
     'REDIS_USERNAME',
     'REDIS_PASSWORD',
     'REDIS_HOST',
-    'REDIS_PORT'
+    'REDIS_PORT',
+    'SSL_IPN_URL'
   ]
 
   envArray.forEach((key) => {
@@ -117,7 +119,8 @@ const loadEnv = (): EnvProps => {
       SSL_BACKEND_CANCEL_URL: process.env.SSL_BACKEND_CANCEL_URL as string,
       SSL_FRONTEND_SUCCESS_URL: process.env.SSL_FRONTEND_SUCCESS_URL as string,
       SSL_FRONTEND_FAIL_URL: process.env.SSL_FRONTEND_FAIL_URL as string,
-      SSL_FRONTEND_CANCEL_URL: process.env.SSL_FRONTEND_CANCEL_URL as string
+      SSL_FRONTEND_CANCEL_URL: process.env.SSL_FRONTEND_CANCEL_URL as string,
+      SSL_IPN_URL: process.env.SSL_IPN_URL as string
     },
     cloudinary: {
       CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,

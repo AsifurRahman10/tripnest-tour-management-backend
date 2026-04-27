@@ -5,6 +5,7 @@ import { PaymentService } from './payment.service'
 import { envVars } from '../../config/config'
 import sendResponse from '../../utils/sendResponse'
 import httpStatusCode from 'http-status-codes'
+import { sslCommerzService } from '../sslCommerz/sslCommerz.server'
 
 const initPayment = catchAsync(async (req: Request, res: Response) => {
   const bookingId = req.params.bookingId
@@ -63,10 +64,23 @@ const getInvoice = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const validatePayment = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body
+  console.log(payload, 'ssl payload')
+  const result = await sslCommerzService.validatePayment(payload)
+  sendResponse(res, {
+    statusCode: httpStatusCode.OK,
+    success: true,
+    message: 'Payment validated successfully',
+    data: result
+  })
+})
+
 export const PaymentController = {
   successPayment,
   failPayment,
   cancelPayment,
   initPayment,
-  getInvoice
+  getInvoice,
+  validatePayment
 }
