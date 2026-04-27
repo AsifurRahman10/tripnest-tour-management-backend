@@ -16,4 +16,6 @@ router.get(
   PaymentController.getInvoice
 )
 
+router.post('/validate-payment', PaymentController.validatePayment)
+
 export const PaymentRoute = router
