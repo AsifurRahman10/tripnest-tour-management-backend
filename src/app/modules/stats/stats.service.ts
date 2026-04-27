@@ -1,4 +1,6 @@
 import { Booking } from '../booking/booking.model'
+import { PAYMENT_STATUS } from '../payment/payment.interface'
+import { Payment } from '../payment/payment.model'
 import { Tour } from '../tour/tour.model'
 import { IsActive } from '../user/user.interface'
 import { User } from '../user/user.model'
@@ -294,8 +296,86 @@ const bookingStats = async () => {
   }
 }
 
+const paymentStats = async () => {
+  const totalPaymentsPromise = Payment.countDocuments()
+
+  const totalPaymentByPaidPromise = Payment.countDocuments({
+    paid: true
+  })
+
+  const totalPaidRevenuePromise = Payment.aggregate([
+    // match paid
+    {
+      $match: { status: PAYMENT_STATUS.PAID }
+    },
+    // group and sum
+    {
+      $group: {
+        _id: null,
+        totalRevenue: { $sum: '$amount' }
+      }
+    }
+  ])
+  const totalPaymentByStatusPromise = Payment.aggregate([
+    // group by status
+    {
+      $group: {
+        _id: '$status',
+        count: { $sum: 1 }
+      }
+    }
+  ])
+
+  const avgPaymentAmountPromise = Payment.aggregate([
+    // group
+    {
+      $group: {
+        _id: null,
+        avgAmount: { $avg: '$amount' }
+      }
+    }
+  ])
+
+  const paymentGetawayDataPromise = Payment.aggregate([
+    // group
+    {
+      $group: {
+        _id: { $ifNull: ['$paymentGatewayData.status', 'Unknown'] },
+        count: { $sum: 1 }
+      }
+    }
+  ])
+  const [
+    totalPayments,
+    totalPaymentByPaid,
+    totalPaidRevenue,
+    totalPaymentByStatus,
+    avgPaymentAmount,
+    paymentGetawayData
+  ] = await Promise.all([
+    totalPaymentsPromise,
+    totalPaymentByPaidPromise,
+    totalPaidRevenuePromise,
+    totalPaymentByStatusPromise,
+    avgPaymentAmountPromise,
+    paymentGetawayDataPromise
+  ])
+
+  return {
+    totalPayments,
+    totalPaymentByPaid,
+    totalPaidRevenue: totalPaidRevenue[0]
+      ? totalPaidRevenue[0].totalRevenue
+      : 0,
+    totalPaymentByStatus,
+    avgPaymentAmount: Math.round(avgPaymentAmount[0].avgAmount),
+    paymentGetawayData
+  }
+}
+
 export const StatsService = {
   userStats,
   tourStats,
-  bookingStats
+  bookingStats,
+  paymentStats
 }

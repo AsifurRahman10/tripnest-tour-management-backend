@@ -10,11 +10,11 @@ router.get(
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   StatsController.getUserStats
 )
-// router.get(
-//   '/payment',
-//   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-//   StatsController.getPaymentStats
-// )
+router.get(
+  '/payment',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  StatsController.getPaymentStats
+)
 router.get(
   '/booking',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
