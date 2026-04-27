@@ -3,6 +3,7 @@ import { redisClient } from '../../config/redis.config'
 import { sendEmail } from '../../utils/sendEmail'
 import AppError from '../../errorHelpers/AppError'
 import { User } from '../user/user.model'
+import HttpStatusCode from 'http-status-codes'
 
 const otpExpiration = 2 * 60
 
@@ -14,6 +15,16 @@ const generateOtp = (length = 6) => {
 
 const sendOtp = async (email: string, name: string) => {
   const otp = generateOtp()
+
+  const user = await User.findOne({ email })
+
+  if (!user) {
+    throw new AppError(HttpStatusCode.NOT_FOUND, 'User not found')
+  }
+
+  if (user.isVerified) {
+    throw new AppError(HttpStatusCode.BAD_REQUEST, 'User is already verified')
+  }
 
   const redisKey = `otp:${email}`
 
@@ -35,14 +46,24 @@ const sendOtp = async (email: string, name: string) => {
 const verifyOtp = async (email: string, otp: string) => {
   const redisKey = `otp:${email}`
 
+  const user = await User.findOne({ email })
+
+  if (!user) {
+    throw new AppError(HttpStatusCode.NOT_FOUND, 'User not found')
+  }
+
+  if (user.isVerified) {
+    throw new AppError(HttpStatusCode.BAD_REQUEST, 'User is already verified')
+  }
+
   const savedOtp = await redisClient.get(redisKey)
 
   if (!savedOtp) {
-    throw new AppError(400, 'Invalid or expired OTP')
+    throw new AppError(HttpStatusCode.BAD_REQUEST, 'Invalid or expired OTP')
   }
 
   if (savedOtp !== otp) {
-    throw new AppError(400, 'Invalid or expired OTP')
+    throw new AppError(HttpStatusCode.BAD_REQUEST, 'Invalid or expired OTP')
   }
 
   await Promise.all([
