@@ -16,7 +16,20 @@ const sendOtp = catchAsync(async (req: Request, res: Response) => {
     data: null
   })
 })
+const verifyOtp = catchAsync(async (req: Request, res: Response) => {
+  const { email, otp } = req.body
+
+  await OtpService.verifyOtp(email, otp)
+
+  sendResponse(res, {
+    statusCode: httpStatusCode.OK,
+    success: true,
+    message: 'OTP verified successfully',
+    data: null
+  })
+})
 
 export const OtpController = {
-  sendOtp
+  sendOtp,
+  verifyOtp
 }
