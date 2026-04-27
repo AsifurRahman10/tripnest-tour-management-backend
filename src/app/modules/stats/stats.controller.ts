@@ -29,8 +29,21 @@ const getTourStats = catchAsync(
     })
   }
 )
+const getBookingStats = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await StatsService.bookingStats()
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'All Booking retrieved successfully',
+      data: result
+    })
+  }
+)
 
 export const StatsController = {
   getUserStats,
-  getTourStats
+  getTourStats,
+  getBookingStats
 }
