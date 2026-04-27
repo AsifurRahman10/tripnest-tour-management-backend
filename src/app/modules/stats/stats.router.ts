@@ -15,11 +15,11 @@ router.get(
 //   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
 //   StatsController.getPaymentStats
 // )
-// router.get(
-//   '/booking',
-//   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-//   statsControllers.bookingStats
-// )
+router.get(
+  '/booking',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  StatsController.getBookingStats
+)
 router.get(
   '/tour',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),

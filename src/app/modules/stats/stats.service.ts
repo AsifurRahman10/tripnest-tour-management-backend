@@ -192,7 +192,110 @@ const tourStats = async () => {
   }
 }
 
+const bookingStats = async () => {
+  const totalBookingsPromise = Booking.countDocuments()
+
+  const totalBookingsByStatusPromise = Booking.aggregate([
+    // group by status
+    {
+      $group: {
+        _id: '$status',
+        count: { $sum: 1 }
+      }
+    }
+  ])
+
+  const bookingPerTourPromise = Booking.aggregate([
+    // group by tour
+    {
+      $group: {
+        _id: '$tour',
+        bookingCount: { $sum: 1 }
+      }
+    },
+    // sort
+    {
+      $sort: { bookingCount: -1 }
+    },
+    // limit
+    {
+      $limit: 5
+    },
+    // lookup
+    {
+      $lookup: {
+        from: 'tours',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'tourData'
+      }
+    },
+    // unwind
+    {
+      $unwind: '$tourData'
+    },
+    // project
+    {
+      $project: {
+        bookingCount: 1,
+        'tourData.title': 1,
+        'tourData.slug': 1
+      }
+    }
+  ])
+
+  const avgGuestPerBookingPromise = Booking.aggregate([
+    // group
+    {
+      $group: {
+        _id: null,
+        avgGuest: { $avg: '$guestCount' }
+      }
+    }
+  ])
+
+  const bookingLast7DaysPromise = Booking.countDocuments({
+    createdAt: { $gte: sevenDaysAgo }
+  })
+  const bookingLast30DaysPromise = Booking.countDocuments({
+    createdAt: { $gte: thirtyDaysAgo }
+  })
+
+  const totalBookingByUniqueUserPromise = Booking.distinct('user').then(
+    (user) => user.length
+  )
+
+  const [
+    totalBookings,
+    bookingsByStatus,
+    bookingPerTour,
+    avgGuestPerBooking,
+    bookingLast7Days,
+    bookingLast30Days,
+    totalBookingByUniqueUser
+  ] = await Promise.all([
+    totalBookingsPromise,
+    totalBookingsByStatusPromise,
+    bookingPerTourPromise,
+    avgGuestPerBookingPromise,
+    bookingLast7DaysPromise,
+    bookingLast30DaysPromise,
+    totalBookingByUniqueUserPromise
+  ])
+
+  return {
+    totalBookings,
+    bookingsByStatus,
+    bookingPerTour,
+    avgGuestPerBooking: Math.round(avgGuestPerBooking[0].avgGuest),
+    bookingLast7Days,
+    bookingLast30Days,
+    totalBookingByUniqueUser
+  }
+}
+
 export const StatsService = {
   userStats,
-  tourStats
+  tourStats,
+  bookingStats
 }
