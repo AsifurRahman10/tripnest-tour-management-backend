@@ -15,5 +15,18 @@ router.post(
   validateRequest(guideApplicationValidation.guideApplicationValidationSchema),
   GuideApplicationController.createGuideApplication
 )
+router.patch(
+  '/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(
+    guideApplicationValidation.updateGuideApplicationStatusSchema
+  ),
+  GuideApplicationController.updateGuideApplicationStatus
+)
+router.get(
+  '/',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  GuideApplicationController.getAllGuideApplications
+)
 
 export const GuideApplicationRouter = router

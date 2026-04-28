@@ -13,7 +13,7 @@ const createGuideApplication = catchAsync(
     if (file) {
       req.body.image = file.path
     }
-    const payload = { ...req.body, user: user.id }
+    const payload = { ...req.body, user: user.userId }
     const result = await GuideApplicationService.createGuideApplication(payload)
 
     sendResponse(res, {
@@ -24,7 +24,41 @@ const createGuideApplication = catchAsync(
     })
   }
 )
+const updateGuideApplicationStatus = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params
+    const { status } = req.body
+    const result =
+      await GuideApplicationService.updateGuideApplicationStatusById(
+        id as string,
+        status
+      )
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'Guide Application status updated successfully',
+      data: result
+    })
+  }
+)
+const getAllGuideApplications = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await GuideApplicationService.getAllGuideApplications(
+      req.query as Record<string, string>
+    )
+
+    sendResponse(res, {
+      statusCode: httpStatusCode.OK,
+      success: true,
+      message: 'Guide Applications retrieved successfully',
+      data: result
+    })
+  }
+)
 
 export const GuideApplicationController = {
-  createGuideApplication
+  createGuideApplication,
+  updateGuideApplicationStatus,
+  getAllGuideApplications
 }

@@ -7,7 +7,7 @@ import {
 const guideApplicationSchema = new Schema<IGuideApplication>(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    nidPhoto: { type: String, required: true },
+    nidPhoto: { type: String },
     division: { type: Schema.Types.ObjectId, ref: 'Division', required: true },
     status: {
       type: String,
