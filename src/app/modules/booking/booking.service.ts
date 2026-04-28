@@ -14,13 +14,104 @@ const getTransactionId = () => {
   return `trans_${Date.now()}_${Math.floor(Math.random() * 1000)}`
 }
 
+const createBooking = async (
+  bookingData: Partial<IBooking>,
+  userId: string
+) => {
+  const transactionId = getTransactionId()
+  const session = await Booking.startSession()
+
+  try {
+    session.startTransaction()
+
+    const user = await User.findById(userId).session(session)
+    if (!user?.phone || !user?.address) {
+      throw new AppError(
+        httpStatusCode.BAD_REQUEST,
+        'Please update your profile with phone and address before booking'
+      )
+    }
+
+    const tour = await Tour.findById(bookingData.tour)
+      .select('costFrom')
+      .session(session)
+
+    if (!tour?.costFrom) {
+      throw new AppError(httpStatusCode.NOT_FOUND, 'Tour not found')
+    }
+
+    if (!bookingData.guestCount) {
+      throw new AppError(httpStatusCode.BAD_REQUEST, 'Guest count is required')
+    }
+
+    const amount = tour.costFrom * bookingData.guestCount
+
+    const booking = await Booking.create(
+      [
+        {
+          ...bookingData,
+          user: userId,
+          status: BOOKING_STATUS.PENDING
+        }
+      ],
+      { session }
+    )
+
+    const payment = await Payment.create(
+      [
+        {
+          booking: booking[0]._id,
+          status: PAYMENT_STATUS.UNPAID,
+          transactionId,
+          amount
+        }
+      ],
+      { session }
+    )
+
+    booking[0].payment = payment[0]._id
+    await booking[0].save({ session })
+
+    await session.commitTransaction()
+    session.endSession()
+
+    const populatedBooking = await Booking.findById(booking[0]._id)
+      .populate('tour', 'title costFrom')
+      .populate('payment')
+      .populate('user', 'name email phone address')
+
+    const paymentPayload = {
+      amount,
+      transactionId,
+      name: (populatedBooking?.user as any).name,
+      email: (populatedBooking?.user as any).email,
+      phoneNumber: (populatedBooking?.user as any).phone,
+      address: (populatedBooking?.user as any).address
+    }
+
+    const initializeSSLPayment =
+      await sslCommerzService.sslPaymentInit(paymentPayload)
+
+    return {
+      booking: populatedBooking,
+      paymentUrl: initializeSSLPayment?.GatewayPageURL || null
+    }
+  } catch (error) {
+    await session.abortTransaction()
+    session.endSession()
+    throw error
+  }
+}
+
 // const createBooking = async (
 //   bookingData: Partial<IBooking>,
 //   userId: string
 // ) => {
 //   const transactionId = getTransactionId()
-//   const session = await Booking.startSession()
-//   session.startTransaction()
+
+//   let bookingDoc = null
+//   let paymentDoc = null
+
 //   try {
 //     const user = await User.findById(userId)
 
@@ -37,152 +128,63 @@ const getTransactionId = () => {
 //       throw new AppError(httpStatusCode.NOT_FOUND, 'Tour not found')
 //     }
 
-//     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-//     const amount = tour.costFrom * bookingData.guestCount!
+//     const amount = tour.costFrom * (bookingData.guestCount || 1)
 
-//     const booking = await Booking.create(
-//       [
-//         {
-//           ...bookingData,
-//           user: userId,
-//           status: BOOKING_STATUS.PENDING
-//         }
-//       ],
-//       { session }
-//     )
+//     // 1️⃣ Create booking
+//     bookingDoc = await Booking.create({
+//       ...bookingData,
+//       user: userId,
+//       status: BOOKING_STATUS.PENDING
+//     })
 
-//     const payment = await Payment.create(
-//       [
-//         {
-//           booking: booking[0]._id,
-//           status: PAYMENT_STATUS.UNPAID,
-//           transactionId: transactionId,
-//           amount: amount
-//         }
-//       ],
-//       { session }
-//     )
+//     // 2️⃣ Create payment
+//     paymentDoc = await Payment.create({
+//       booking: bookingDoc._id,
+//       status: PAYMENT_STATUS.UNPAID,
+//       transactionId: transactionId,
+//       amount: amount
+//     })
 
-//     const updateBooking = await Booking.findByIdAndUpdate(
-//       booking[0]._id,
-//       { payment: payment[0]._id },
-//       { new: true, runValidators: true, session }
+//     // 3️⃣ Update booking with payment
+//     const updatedBooking = await Booking.findByIdAndUpdate(
+//       bookingDoc._id,
+//       { payment: paymentDoc._id },
+//       { new: true, runValidators: true }
 //     )
-//       .populate('tour', 'title, costFrom')
+//       .populate('tour', 'title costFrom')
 //       .populate('payment')
-//       .populate('user', 'name email phone adress')
+//       .populate('user', 'name email phone address')
 
 //     const userAddress = (updatedBooking?.user as any).address
 
-// const paymentPayload = {
-//   amount: amount,
-//   transactionId: transactionId,
-//   name: (updatedBooking?.user as any).name,
-//   email: (updatedBooking?.user as any).email,
-//   phoneNumber: (updatedBooking?.user as any).phone,
-//   address: userAddress
-// }
+//     const paymentPayload = {
+//       amount: amount,
+//       transactionId: transactionId,
+//       name: (updatedBooking?.user as any).name,
+//       email: (updatedBooking?.user as any).email,
+//       phoneNumber: (updatedBooking?.user as any).phone,
+//       address: userAddress
+//     }
 
-// const initializeSSLPayment =
-//   await sslCommerzService.sslPaymentInit(paymentPayload)
-
-//     session.commitTransaction()
-//     session.endSession()
-
-// // console.log(initializeSSLPayment)
-// return {
-//   updatedBooking,
-//   paymentUrl: initializeSSLPayment?.GatewayPageURL || null
-// }
+//     const initializeSSLPayment =
+//       await sslCommerzService.sslPaymentInit(paymentPayload)
+//     // console.log(initializeSSLPayment)
+//     return {
+//       updatedBooking,
+//       paymentUrl: initializeSSLPayment?.GatewayPageURL || null
+//     }
 //   } catch (error) {
-//     await session.abortTransaction()
-//     session.endSession()
+//     // 🧹 Manual rollback (important)
+//     if (bookingDoc) {
+//       await Booking.findByIdAndDelete(bookingDoc._id)
+//     }
+//     if (paymentDoc) {
+//       await Payment.findByIdAndDelete(paymentDoc._id)
+//     }
+
 //     throw error
 //   }
 // }
-
-const createBooking = async (
-  bookingData: Partial<IBooking>,
-  userId: string
-) => {
-  const transactionId = getTransactionId()
-
-  let bookingDoc = null
-  let paymentDoc = null
-
-  try {
-    const user = await User.findById(userId)
-
-    if (!user?.phone || !user?.address) {
-      throw new AppError(
-        httpStatusCode.BAD_REQUEST,
-        'Please update your profile with phone and address before booking a tour'
-      )
-    }
-
-    const tour = await Tour.findById(bookingData.tour).select('costFrom')
-
-    if (!tour?.costFrom) {
-      throw new AppError(httpStatusCode.NOT_FOUND, 'Tour not found')
-    }
-
-    const amount = tour.costFrom * (bookingData.guestCount || 1)
-
-    // 1️⃣ Create booking
-    bookingDoc = await Booking.create({
-      ...bookingData,
-      user: userId,
-      status: BOOKING_STATUS.PENDING
-    })
-
-    // 2️⃣ Create payment
-    paymentDoc = await Payment.create({
-      booking: bookingDoc._id,
-      status: PAYMENT_STATUS.UNPAID,
-      transactionId: transactionId,
-      amount: amount
-    })
-
-    // 3️⃣ Update booking with payment
-    const updatedBooking = await Booking.findByIdAndUpdate(
-      bookingDoc._id,
-      { payment: paymentDoc._id },
-      { new: true, runValidators: true }
-    )
-      .populate('tour', 'title costFrom')
-      .populate('payment')
-      .populate('user', 'name email phone address')
-
-    const userAddress = (updatedBooking?.user as any).address
-
-    const paymentPayload = {
-      amount: amount,
-      transactionId: transactionId,
-      name: (updatedBooking?.user as any).name,
-      email: (updatedBooking?.user as any).email,
-      phoneNumber: (updatedBooking?.user as any).phone,
-      address: userAddress
-    }
-
-    const initializeSSLPayment =
-      await sslCommerzService.sslPaymentInit(paymentPayload)
-    // console.log(initializeSSLPayment)
-    return {
-      updatedBooking,
-      paymentUrl: initializeSSLPayment?.GatewayPageURL || null
-    }
-  } catch (error) {
-    // 🧹 Manual rollback (important)
-    if (bookingDoc) {
-      await Booking.findByIdAndDelete(bookingDoc._id)
-    }
-    if (paymentDoc) {
-      await Payment.findByIdAndDelete(paymentDoc._id)
-    }
-
-    throw error
-  }
-}
 const getAllBookings = async (query: Record<string, string>) => {
   const searchAbleFields = ['status']
   const queryBuilder = new QueryBuilder(Booking.find(), query)

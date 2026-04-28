@@ -12,70 +12,68 @@ import { PAYMENT_STATUS } from './payment.interface'
 import { Payment } from './payment.model'
 import httpStatusCode from 'http-status-codes'
 
-// const successPayment = async (query: Record<string, string>) => {
-//   const session = await Booking.startSession()
-//   session.startTransaction()
-//   try {
-//     const updatePayment = await Payment.findByIdAndUpdate(
-//       query.transactionId,
-//       { status: PAYMENT_STATUS.PAID },
-//       { new: true, runValidators: true, session }
-//     )
-
-//     await Booking.findByIdAndUpdate(
-//       updatePayment?.booking,
-//       { status: BOOKING_STATUS.CONFIRM },
-//       { new: true, session }
-//     )
-
-//     session.commitTransaction()
-//     session.endSession()
-
-//     return {
-//       success: true,
-//       message: 'Payment successful'
-//     }
-//   } catch (error) {
-//     await session.abortTransaction()
-//     session.endSession()
-//     throw error
-//   }
-// }
-
 const successPayment = async (query: Record<string, string>) => {
-  const updatePayment = await Payment.findOneAndUpdate(
-    { transactionId: query.transactionId },
-    { status: PAYMENT_STATUS.PAID }
-  )
-
-  if (!updatePayment) {
-    throw new Error('Payment not found')
+  if (!query.transactionId) {
+    throw new AppError(400, 'Transaction ID is required')
   }
 
-  const updatedBooking = await Booking.findByIdAndUpdate(
-    updatePayment.booking,
-    { status: BOOKING_STATUS.CONFIRM },
-    { new: true }
-  )
-    .populate('user', 'name email')
-    .populate('tour', 'title')
+  const session = await Booking.startSession()
 
-  if (!updatedBooking) {
-    // ⚠️ rollback manually if booking fails
-    await Payment.findByIdAndUpdate(query.transactionId, {
-      status: PAYMENT_STATUS.FAILED
-    })
+  let updatedBooking: any
+  let updatePayment: any
 
-    throw new Error('Booking update failed')
+  try {
+    session.startTransaction()
+
+    const payment = await Payment.findOne({
+      transactionId: query.transactionId
+    }).session(session)
+
+    if (!payment) {
+      throw new AppError(404, 'Payment not found')
+    }
+
+    // ✅ idempotency
+    if (payment.status === PAYMENT_STATUS.PAID) {
+      await session.commitTransaction()
+      session.endSession()
+
+      return {
+        success: true,
+        message: 'Payment already processed'
+      }
+    }
+
+    payment.status = PAYMENT_STATUS.PAID
+    updatePayment = await payment.save({ session })
+
+    updatedBooking = await Booking.findByIdAndUpdate(
+      payment.booking,
+      { status: BOOKING_STATUS.CONFIRM },
+      { new: true, session }
+    )
+      .populate('user', 'name email')
+      .populate('tour', 'title')
+
+    if (!updatedBooking) {
+      throw new AppError(500, 'Booking update failed')
+    }
+
+    await session.commitTransaction()
+    session.endSession()
+  } catch (error) {
+    await session.abortTransaction()
+    session.endSession()
+    throw error
   }
 
   const pdfPayload: IInvoiceData = {
     transactionId: updatePayment.transactionId,
     amount: updatePayment.amount,
-    bookingDate: updatedBooking?.createdAt as Date,
-    userName: (updatedBooking?.user as unknown as IUser).name,
-    tourTitle: (updatedBooking?.tour as unknown as ITour).title || '',
-    guestCount: updatedBooking?.guestCount || 0,
+    bookingDate: updatedBooking.createdAt as Date,
+    userName: (updatedBooking.user as IUser).name,
+    tourTitle: (updatedBooking.tour as ITour).title || '',
+    guestCount: updatedBooking.guestCount || 0,
     totalAmount: updatePayment.amount
   }
 
@@ -90,16 +88,12 @@ const successPayment = async (query: Record<string, string>) => {
     throw new AppError(500, 'PDF upload failed')
   }
 
-  await Payment.findByIdAndUpdate(
-    updatePayment._id,
-    {
-      invoiceUrl: pdfUploadData.secure_url
-    },
-    { runValidators: true }
-  )
+  await Payment.findByIdAndUpdate(updatePayment._id, {
+    invoiceUrl: pdfUploadData.secure_url
+  })
 
   await sendEmail({
-    to: (updatedBooking?.user as unknown as IUser).email,
+    to: (updatedBooking.user as IUser).email,
     subject: 'Tripnest Booking Invoice',
     templateName: 'invoice',
     templateData: pdfPayload,
@@ -117,58 +111,182 @@ const successPayment = async (query: Record<string, string>) => {
     message: 'Payment successful'
   }
 }
+
+// const successPayment = async (query: Record<string, string>) => {
+//   const updatePayment = await Payment.findOneAndUpdate(
+//     { transactionId: query.transactionId },
+//     { status: PAYMENT_STATUS.PAID }
+//   )
+
+//   if (!updatePayment) {
+//     throw new Error('Payment not found')
+//   }
+
+//   const updatedBooking = await Booking.findByIdAndUpdate(
+//     updatePayment.booking,
+//     { status: BOOKING_STATUS.CONFIRM },
+//     { new: true }
+//   )
+//     .populate('user', 'name email')
+//     .populate('tour', 'title')
+
+//   if (!updatedBooking) {
+//     // ⚠️ rollback manually if booking fails
+//     await Payment.findByIdAndUpdate(query.transactionId, {
+//       status: PAYMENT_STATUS.FAILED
+//     })
+
+//     throw new Error('Booking update failed')
+//   }
+
+//   const pdfPayload: IInvoiceData = {
+//     transactionId: updatePayment.transactionId,
+//     amount: updatePayment.amount,
+//     bookingDate: updatedBooking?.createdAt as Date,
+//     userName: (updatedBooking?.user as unknown as IUser).name,
+//     tourTitle: (updatedBooking?.tour as unknown as ITour).title || '',
+//     guestCount: updatedBooking?.guestCount || 0,
+//     totalAmount: updatePayment.amount
+//   }
+
+//   const pdfBuffer = await generatePdf(pdfPayload)
+
+//   const pdfUploadData = await uploadBufferToCloudinary(
+//     pdfBuffer,
+//     `invoice-${updatePayment.transactionId}`
+//   )
+
+//   if (!pdfUploadData) {
+//     throw new AppError(500, 'PDF upload failed')
+//   }
+
+//   await Payment.findByIdAndUpdate(
+//     updatePayment._id,
+//     {
+//       invoiceUrl: pdfUploadData.secure_url
+//     },
+//     { runValidators: true }
+//   )
+
+//   await sendEmail({
+//     to: (updatedBooking?.user as unknown as IUser).email,
+//     subject: 'Tripnest Booking Invoice',
+//     templateName: 'invoice',
+//     templateData: pdfPayload,
+//     attachment: [
+//       {
+//         filename: `invoice-${updatePayment.transactionId}.pdf`,
+//         content: pdfBuffer,
+//         contentType: 'application/pdf'
+//       }
+//     ]
+//   })
+
+//   return {
+//     success: true,
+//     message: 'Payment successful'
+//   }
+// }
 const failPayment = async (query: Record<string, string>) => {
-  const updatePayment = await Payment.findOneAndUpdate(
-    { transactionId: query.transactionId },
-    { status: PAYMENT_STATUS.FAILED }
-  )
-
-  const updatedBooking = await Booking.findByIdAndUpdate(
-    updatePayment?.booking,
-    { status: BOOKING_STATUS.FAILED }
-  )
-
-  if (!updatedBooking) {
-    // ⚠️ rollback manually if booking fails
-    await Payment.findByIdAndUpdate(query.transactionId, {
-      status: PAYMENT_STATUS.FAILED
-    })
-
-    throw new Error('Booking update failed')
+  if (!query.transactionId) {
+    throw new Error('Transaction ID is required')
   }
 
-  return {
-    success: true,
-    message: 'Payment failed'
+  const session = await Booking.startSession()
+
+  try {
+    session.startTransaction()
+
+    const payment = await Payment.findOne({
+      transactionId: query.transactionId
+    }).session(session)
+
+    if (!payment) {
+      throw new Error('Payment not found')
+    }
+
+    // ✅ idempotency (important)
+    if (payment.status === PAYMENT_STATUS.FAILED) {
+      await session.commitTransaction()
+      session.endSession()
+
+      return {
+        success: true,
+        message: 'Payment already marked as failed'
+      }
+    }
+
+    payment.status = PAYMENT_STATUS.FAILED
+    await payment.save({ session })
+
+    await Booking.findByIdAndUpdate(
+      payment.booking,
+      { status: BOOKING_STATUS.FAILED },
+      { session }
+    )
+
+    await session.commitTransaction()
+    session.endSession()
+
+    return {
+      success: true,
+      message: 'Payment failed'
+    }
+  } catch (error) {
+    await session.abortTransaction()
+    session.endSession()
+    throw error
   }
 }
 const cancelPayment = async (query: Record<string, string>) => {
-  const updatePayment = await Payment.findOneAndUpdate(
-    { transactionId: query.transactionId },
-    { status: PAYMENT_STATUS.CANCEL }
-  )
-
-  if (!updatePayment) {
-    throw new Error('Payment not found')
+  if (!query.transactionId) {
+    throw new Error('Transaction ID is required')
   }
 
-  const updatedBooking = await Booking.findByIdAndUpdate(
-    updatePayment.booking,
-    { status: BOOKING_STATUS.CANCEL }
-  )
+  const session = await Booking.startSession()
 
-  if (!updatedBooking) {
-    // ⚠️ rollback manually if booking fails
-    await Payment.findByIdAndUpdate(query.transactionId, {
-      status: PAYMENT_STATUS.CANCEL
-    })
+  try {
+    session.startTransaction()
 
-    throw new Error('Booking update failed')
-  }
+    const payment = await Payment.findOne({
+      transactionId: query.transactionId
+    }).session(session)
 
-  return {
-    success: true,
-    message: 'Payment cancelled'
+    if (!payment) {
+      throw new Error('Payment not found')
+    }
+
+    // ✅ idempotency
+    if (payment.status === PAYMENT_STATUS.CANCEL) {
+      await session.commitTransaction()
+      session.endSession()
+
+      return {
+        success: true,
+        message: 'Payment already cancelled'
+      }
+    }
+
+    payment.status = PAYMENT_STATUS.CANCEL
+    await payment.save({ session })
+
+    await Booking.findByIdAndUpdate(
+      payment.booking,
+      { status: BOOKING_STATUS.CANCEL },
+      { session }
+    )
+
+    await session.commitTransaction()
+    session.endSession()
+
+    return {
+      success: true,
+      message: 'Payment cancelled'
+    }
+  } catch (error) {
+    await session.abortTransaction()
+    session.endSession()
+    throw error
   }
 }
 
