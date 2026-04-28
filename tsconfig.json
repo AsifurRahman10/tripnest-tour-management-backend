@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
 
     "module": "CommonJS",
     "moduleResolution": "Node",
