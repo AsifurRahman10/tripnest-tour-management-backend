@@ -14,7 +14,7 @@ const seedSuperAdmin = async () => {
 
     const authProvider: IAuthProvider = {
       provider: 'credential',
-      providerID: envVars.SUPER_ADMIN_EMAIL,
+      providerID: envVars.SUPER_ADMIN_EMAIL
     }
 
     const hashPassword = await bcrypt.hash(
@@ -22,12 +22,15 @@ const seedSuperAdmin = async () => {
       Number(envVars.BCRYPT_SALT_ROUND)
     )
 
-    const superAdminPayload: IUser = {
+    const superAdminPayload: Partial<IUser> = {
       name: 'Super Admin',
       email: envVars.SUPER_ADMIN_EMAIL,
       role: Role.SUPER_ADMIN,
       auths: [authProvider],
       password: hashPassword,
+      isVerified: 'true',
+      phone: '00000000000',
+      address: 'N/A'
     }
     const createSuperAdmin = await User.create(superAdminPayload)
     if (createSuperAdmin) {
