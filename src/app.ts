@@ -31,7 +31,7 @@ app.use(
 app.use(cookieParser())
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('Welcome to Tripnest API')
 })
 
 app.use('/api/v1', router)
