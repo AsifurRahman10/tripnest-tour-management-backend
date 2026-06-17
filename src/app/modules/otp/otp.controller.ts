@@ -5,9 +5,9 @@ import httpStatusCode from 'http-status-codes'
 import { OtpService } from './otp.service'
 
 const sendOtp = catchAsync(async (req: Request, res: Response) => {
-  const { email, name } = req.body
+  const { email } = req.body
 
-  await OtpService.sendOtp(email, name)
+  await OtpService.sendOtp(email)
 
   sendResponse(res, {
     statusCode: httpStatusCode.OK,

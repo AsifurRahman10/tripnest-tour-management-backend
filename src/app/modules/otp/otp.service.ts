@@ -13,7 +13,7 @@ const generateOtp = (length = 6) => {
   return otp
 }
 
-const sendOtp = async (email: string, name: string) => {
+const sendOtp = async (email: string) => {
   const otp = generateOtp()
 
   const user = await User.findOne({ email })
@@ -37,7 +37,7 @@ const sendOtp = async (email: string, name: string) => {
     subject: 'Your OTP for Tripnest',
     templateName: 'otp',
     templateData: {
-      name,
+      name: user.name,
       otp
     }
   })

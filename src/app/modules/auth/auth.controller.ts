@@ -28,7 +28,8 @@ const credentialLogin = catchAsync(
       const tokens = createUserTokens(user)
       sendCookie(res, tokens)
 
-      delete user.toObject().password
+      const userData = user.toObject()
+      delete userData.password
       sendResponse(res, {
         statusCode: httpStatusCode.ACCEPTED,
         success: true,
@@ -36,7 +37,7 @@ const credentialLogin = catchAsync(
         data: {
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
-          user
+          userData
         }
       })
     })(req, res, next)
